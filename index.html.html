@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Uma pergunta rápida</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+<style>
+/* Clean e fofo: branco com pastéis (manteiga, azul-céu, menta) e azul-marinho pro texto. Sem rosa, sem marrom, sem estampa. */
+:root{
+  --bg:#ffffff; --ink:#111111; --muted:#76706a; --hair:#ebe5dc;
+  --butter:#fff1c9; --mint:#d6efe2; --grey:#eceef2; --grey-ink:#8a8f9c; --rose:#ffd6e1; --rose-ink:#d9668a; --navy:#1b2747; --siren:#e0362c;
+  --display:"Instrument Serif", Georgia, serif;
+  --body:"DM Sans", system-ui, -apple-system, sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--bg); color:var(--ink); font-family:var(--body);
+  overflow:hidden; touch-action:manipulation; user-select:none; -webkit-user-select:none}
+
+/* blobs de cor suaves no fundo */
+.blob{position:fixed; border-radius:50%; filter:blur(50px); opacity:.35; z-index:0; pointer-events:none}
+.b1{width:260px;height:260px;background:var(--butter);top:-70px;right:-80px;opacity:.9}
+.b2{width:240px;height:240px;background:var(--grey);bottom:-90px;left:-90px;opacity:.9}
+
+/* música-tema */
+.np{position:fixed; top:calc(14px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%); z-index:20;
+  display:flex; align-items:center; gap:10px; padding:8px 14px 8px 10px; border-radius:99px;
+  background:#fff; border:1px solid var(--hair); box-shadow:0 6px 20px rgba(0,0,0,.06);
+  font-size:12px; color:var(--ink); text-decoration:none; white-space:nowrap; max-width:calc(100% - 32px)}
+.np b{font-weight:700}
+button.np{font:inherit; font-size:12px; cursor:pointer}
+.np .play{display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:var(--navy); color:#fff; font-size:8px; letter-spacing:-1px; flex:none}
+.ytbox{position:fixed; left:-1000px; top:0; width:200px; height:113px; overflow:hidden; pointer-events:none}
+.np:not(.on) .eq i{animation-play-state:paused}
+.player{position:fixed; top:calc(60px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%); z-index:21;
+  width:min(360px, calc(100% - 32px)); border-radius:16px; overflow:hidden; background:#fff; box-shadow:0 12px 30px rgba(27,39,71,.18)}
+.player-note{font-size:12.5px; font-weight:700; color:var(--navy); padding:8px 12px}
+.player iframe{display:block; width:100%; height:80px; border:0}
+.np .t{overflow:hidden; text-overflow:ellipsis}
+.eq{display:flex; gap:2px; align-items:flex-end; height:14px}
+.eq i{width:3px; background:var(--navy); border-radius:2px; animation:eq 1s ease-in-out infinite}
+.eq i:nth-child(2){animation-delay:.2s;background:var(--rose-ink)} .eq i:nth-child(3){animation-delay:.4s;background:#86c9a6}
+@keyframes eq{0%,100%{height:4px}50%{height:14px}}
+
+.screen{position:fixed; inset:0; z-index:1; display:flex; flex-direction:column; justify-content:safe center; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:70px 24px calc(28px + env(safe-area-inset-bottom)); max-width:460px; margin:0 auto;
+  opacity:0; pointer-events:none; transform:translateY(14px); transition:opacity .35s ease, transform .35s ease}
+.screen.on{opacity:1; pointer-events:auto; transform:none}
+
+.sticker{align-self:flex-start; display:inline-flex; align-items:center; gap:6px;
+  font-size:13px; font-weight:700; padding:7px 13px; border-radius:99px; margin-bottom:18px;
+  background:var(--butter); color:var(--navy)}
+.sticker.sound{background:var(--ink); color:#fff; font-size:15px; padding:9px 16px}
+.np.hide{display:none}
+.sticker.butter{background:var(--butter); color:var(--navy)} .sticker.mint{background:var(--mint); color:var(--navy)} .sticker.sky{background:var(--grey); color:var(--navy)}
+/* capa: alerta de verdade */
+.alert{display:flex; align-items:center; justify-content:center; gap:12px; margin:0 0 26px;
+  background:var(--ink); color:#fff; border-radius:18px; padding:16px 14px;
+  font-weight:700; font-size:clamp(20px,6.4vw,26px); letter-spacing:.08em; text-transform:uppercase; text-align:center; line-height:1.15;
+  box-shadow:0 0 0 0 rgba(224,54,44,.55); animation:ring 1.6s ease-out infinite}
+.alert .s{font-size:clamp(34px,10vw,44px); line-height:1; display:inline-block; animation:wob .8s ease-in-out infinite alternate}
+.alert .s:last-child{animation-delay:.4s}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(224,54,44,.55)}100%{box-shadow:0 0 0 18px rgba(224,54,44,0)}}
+@keyframes wob{from{transform:scale(1) rotate(-8deg)}to{transform:scale(1.15) rotate(8deg)}}
+
+h1{font-family:var(--display); font-weight:400; line-height:1.02; letter-spacing:-.01em;
+  font-size:clamp(40px,11.5vw,54px); margin:0 0 16px}
+h1 em{font-style:italic; color:var(--navy)}
+h1 .hl{background:linear-gradient(transparent 62%, var(--butter) 62%); padding:0 2px}
+p{font-size:16.5px; line-height:1.5; margin:0 0 10px; color:var(--muted)}
+p strong{color:var(--ink); font-weight:700}
+.small{font-size:13px}
+/* calendário */
+.cal{border:1px solid var(--hair); border-radius:22px; padding:14px; background:#fff; box-shadow:0 10px 30px rgba(29,43,79,.06); margin-top:6px}
+.cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px}
+.cal-head b{font-family:var(--display); font-weight:400; font-size:26px; color:var(--navy)}
+.cal-nav{font:inherit; font-size:22px; width:40px; height:40px; border-radius:50%; border:0; background:var(--grey); color:var(--navy); cursor:pointer}
+.cal-nav:disabled{opacity:.25}
+.cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center}
+.cal-wd span{font-size:11px; font-weight:700; color:var(--muted); padding:4px 0}
+.cal-day{font:inherit; font-size:15px; font-weight:500; height:40px; border:0; border-radius:12px; background:transparent; color:var(--navy); cursor:pointer}
+.cal-day.ok{background:var(--mint)}
+.cal-day.off{position:relative; color:#b9bcc5; background:#f4f5f7; cursor:default}
+.cal-day.off::after{content:"✕"; position:absolute; top:1px; right:4px; font-size:11px; font-weight:700; color:var(--rose-ink)}
+#s-date h1{font-size:clamp(34px,9.5vw,44px); margin-bottom:8px} #s-date .cal{padding:10px 12px} #s-date .cal-day{height:34px} #s-date .row{margin-top:14px} #s-date .cal-head{margin-bottom:2px}
+.cal-day.ok.pref{background:#e6dcf7; color:#4b2f86; font-weight:700}
+.cal-day.ok.pref.sel{background:var(--ink); color:#fff}
+.cal-legend .lpref{background:#e6dcf7}
+.cal-legend{display:flex; gap:16px; flex-wrap:wrap; justify-content:center; font-size:12px; color:var(--muted); margin-top:10px}
+.cal-legend span{display:inline-flex; align-items:center; gap:6px}
+.cal-legend i{font-style:normal; display:inline-grid; place-items:center; width:20px; height:20px; border-radius:6px; font-size:12px; font-weight:700}
+.cal-legend .lx{background:#f4f5f7; color:var(--rose-ink)} .lok{background:var(--mint)}
+.cal-day.past{color:#d6d6d6; cursor:default}
+.cal-day.sel{background:var(--ink); color:#fff; font-weight:700; animation:bump .4s cubic-bezier(.3,1.8,.5,1)}
+h1.long{font-size:clamp(36px,10vw,48px); line-height:1.04; margin-bottom:18px}
+p.cv{font-size:18px; color:var(--navy); line-height:1.45; margin:0 0 22px}
+p.cv .hl{background:linear-gradient(transparent 58%, var(--butter) 58%); font-weight:700}
+.tudo{display:block; font-family:var(--display); font-style:italic; font-weight:400; font-size:1.5em; line-height:1.15; color:#3f6fb5; white-space:nowrap; margin:2px 0 0}
+.isso{display:block}
+p.geo{font-family:var(--display); font-style:italic; font-size:21px; color:var(--grey-ink); margin:-6px 0 14px; line-height:1.25}
+p.ask{font-size:19px; font-weight:700; color:var(--ink); line-height:1.35; margin:0}
+
+.btn{font:inherit; font-weight:700; font-size:17px; cursor:pointer; border:0; border-radius:99px;
+  padding:16px 26px; background:#f4f4f4; color:var(--ink); transition:transform .15s ease}
+.btn:active{transform:scale(.96)}
+.btn.primary{background:var(--ink); color:#fff}
+.btn:disabled{opacity:.3}
+.row{display:flex; gap:12px; margin-top:24px; align-items:center; flex-wrap:wrap}
+#yes{transform-origin:left center; transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
+#no{transition:left .22s ease, top .22s ease, transform .2s ease; white-space:nowrap; z-index:5; border:1.5px solid #c9ccd4; background:#e4e6eb; color:var(--navy); box-shadow:0 6px 16px rgba(27,39,71,.18)}
+#no.loose{position:fixed; margin:0}
+#no.give{background:var(--rose); color:var(--navy); border-color:transparent}
+.toast{min-height:50px; margin-top:44px; font-size:15px; color:var(--ink); font-weight:500; line-height:1.4}
+.assist{display:flex; align-items:flex-end; gap:10px; margin-top:40px}
+.assist:has(.bubble:empty){visibility:hidden}
+.oni{width:68px; height:68px; flex:none; transform-origin:50% 100%; filter:drop-shadow(0 6px 10px rgba(29,43,79,.12))}
+.oni .eyes{animation:blink 4s infinite; transform-origin:50% 44%}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+.oni.hop{animation:hop .5s cubic-bezier(.3,1.8,.5,1)}
+@keyframes hop{0%{transform:translateY(0) scale(1,1)}30%{transform:translateY(4px) scale(1.12,.86)}60%{transform:translateY(-10px) scale(.94,1.08)}100%{transform:none}}
+.bubble{position:relative; min-height:0; margin:0 0 10px; padding:14px 16px; border-radius:20px 20px 20px 4px; flex:1; min-width:0;
+  background:var(--grey); color:var(--navy); font-size:18px; font-weight:700; line-height:1.35;
+  box-shadow:0 12px 28px rgba(27,39,71,.10)}
+.bubble::before{content:""; position:absolute; bottom:6px; left:-7px; width:16px; height:16px; background:var(--grey);
+  transform:rotate(45deg); border-radius:3px}
+.bubble.intro{font-size:15px; font-weight:500; background:var(--butter)} .bubble.intro::before{background:var(--butter)}
+.bubble.intro b{font-weight:700}
+#s-ask .assist{margin-top:34px}
+#s-ask.asking p.geo, #s-ask.asking p.cv{display:none}
+#s-ask .assist .bubble{margin:0}
+#energyMsg{font-size:16px; padding:12px 14px} #s-energy .assist{margin-top:14px} #s-energy .big{font-size:56px; margin:2px 0 6px} #s-energy .mood{font-size:44px} #s-energy h1{font-size:clamp(32px,9vw,44px); margin-bottom:8px} #s-energy .row{margin-top:16px}
+#s-deal h1{font-size:clamp(34px,9.5vw,44px); margin-bottom:12px} #s-deal .contract{padding:16px} #s-deal .contract ol{font-size:13.5px; line-height:1.4} #s-deal .contract li{margin-bottom:4px}
+#toast{background:var(--rose); box-shadow:0 12px 28px rgba(217,102,138,.20)} #toast::before{background:var(--rose)}
+.intro-assist{margin:0 0 22px} .intro-assist .oni{width:84px; height:84px}
+#s-intro h1{font-size:clamp(36px,10vw,48px)}
+#toast.pop,#energyMsg.pop{animation:pop .42s cubic-bezier(.3,1.7,.5,1)}
+@keyframes pop{0%{transform:scale(.6) rotate(-3deg); opacity:0}60%{opacity:1}100%{transform:none}}
+
+/* energia */
+.big{font-family:var(--display); font-size:72px; line-height:1; margin:8px 0 10px; display:flex; align-items:center; gap:14px}
+.mood{font-size:56px; display:inline-block}
+.mood.bump{animation:bump .45s cubic-bezier(.3,1.8,.5,1)}
+@keyframes bump{0%{transform:scale(.4) rotate(-20deg)}100%{transform:none}}
+.scale .ic{display:flex; align-items:center; gap:6px; font-weight:700; color:var(--navy); font-size:13px}
+.scale .ic i{font-style:normal; font-size:34px; display:inline-block; transition:transform .2s ease}
+input[type=range]{width:100%; -webkit-appearance:none; appearance:none; height:10px; border-radius:99px; outline:none;
+  background:linear-gradient(90deg,#ff9a8b 0%,#ffc48a 30%,#ffe58f 52%,#b9e6a1 76%,#7fd3a0 100%)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:34px; height:34px; border-radius:50%;
+  background:#fff; border:3px solid var(--ink); box-shadow:0 4px 12px rgba(0,0,0,.15)}
+input[type=range]::-moz-range-thumb{width:30px; height:30px; border-radius:50%; background:#fff; border:3px solid var(--ink)}
+.scale{display:flex; justify-content:space-between; align-items:center; margin-top:12px}
+
+/* planos */
+.chips{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px}
+.chip{font:inherit; font-size:13.5px; text-align:left; padding:14px; border-radius:18px; cursor:pointer;
+  border:1px solid var(--hair); background:#fff; color:var(--muted); line-height:1.3; transition:all .15s}
+.chip .e{font-size:22px; display:block; margin-bottom:6px}
+.chip b{display:block; font-size:15.5px; color:var(--ink); margin-bottom:2px}
+.unlock{font-size:17px; color:var(--navy); margin:0 0 10px}
+#s-plan h1{font-size:clamp(32px,9vw,44px)}
+.chip.wide{grid-column:1 / -1}
+.chip.sel{border-color:var(--ink); background:var(--ink); color:#cfcfcf}
+.chip.sel b{color:#fff}
+
+/* acordo */
+.contract{border:1px solid var(--hair); border-radius:22px; padding:20px; margin:4px 0 18px; background:#fff;
+  box-shadow:0 10px 30px rgba(0,0,0,.05); position:relative}
+.contract h2{font-family:var(--display); font-weight:400; font-size:26px; margin:0 0 10px}
+.contract ol{margin:0; padding-left:20px; font-size:14.5px; line-height:1.5; color:#333}
+.contract li{margin-bottom:6px}
+.stamp{position:absolute; top:-14px; right:16px; font-size:12px; font-weight:700; padding:6px 12px; border-radius:99px;
+  background:var(--mint); color:var(--navy)}
+a.btn{text-decoration:none; text-align:center; display:block}
+
+.bit{position:fixed; top:-30px; z-index:50; pointer-events:none; font-size:24px; animation:fall linear forwards}
+.bit.r{width:9px; height:14px; border-radius:3px}
+@keyframes fall{to{transform:translateY(115vh) rotate(540deg)}}
+@media (max-height:600px){
+  #s-date .sticker{display:none} #s-date h1{font-size:28px} #s-date p{font-size:14px; margin-bottom:6px} #s-date .cal-day{height:29px; font-size:13px} #s-date .cal-head b{font-size:21px} #s-date .cal-nav{width:32px;height:32px} #s-date .cal-legend{margin-top:4px}
+  #s-plan .sticker{display:none} #s-plan h1{font-size:27px; margin-bottom:8px} #s-plan .unlock{font-size:15px} #s-plan .chip{padding:10px; font-size:12.5px} #s-plan .chip .e{font-size:18px; margin-bottom:2px} #s-plan .chips{margin-top:8px} #s-plan .row{margin-top:14px}
+  #s-energy .sticker{display:none} #s-energy h1{font-size:28px} #s-energy .big{font-size:44px} #s-energy .mood{font-size:34px} #s-energy .scale .ic i{font-size:24px} #s-energy .assist .oni{width:48px;height:48px} #energyMsg{font-size:14.5px}
+  #s-ask h1.long{font-size:30px; margin-bottom:10px} #s-ask p.geo{font-size:17px; margin:0 0 8px}
+  #s-ask p.cv{font-size:15px; margin-bottom:12px} #s-ask p.ask{font-size:16.5px}
+  #s-intro .alert{padding:10px; margin-bottom:16px} #s-intro h1{font-size:34px; margin-bottom:8px}
+  .intro-assist{margin-bottom:14px} .intro-assist .oni{width:64px; height:64px} #s-intro .row{margin-top:14px}
+  #s-ask .row{margin-top:14px} #s-ask .assist .oni{width:48px; height:48px} #s-ask .assist .bubble{margin:0} #s-ask .bubble{font-size:15px; padding:10px 12px}
+}
+@media (prefers-reduced-motion: reduce){ .eq i,.bit,.alert,.alert .s,#toast.pop,#energyMsg.pop,.oni.hop,.oni .eyes,.mood.bump,.cal-day.sel{animation:none} }
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div>
+
+<button class="np" id="np" type="button" aria-expanded="false">
+  <span class="eq"><i></i><i></i><i></i></span>
+  <span class="t">Tocando: <b>sua música-tema</b>, obviamente</span>
+  <span class="play" id="npIcon">▶</span>
+</button>
+<div class="ytbox" aria-hidden="true"><div id="yt"></div></div>
+<div class="player" id="player" hidden>
+  <div class="player-note">Toca o ▶ pra ouvir a sua música-tema 🎧</div>
+  <iframe id="spotify" title="So Easy (To Fall In Love) - Olivia Dean" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+</div>
+
+<!-- 1. abertura -->
+<section class="screen on" id="s-id">
+  <span class="sticker sound">🔊 Sound on</span>
+  <h1>Antes de tudo: você é a <em class="cfgFull">Cheyenne Arisa Lopez</em>?</h1>
+  <p>Verificação de identidade. É rapidinho.</p>
+  <div class="row">
+    <button class="btn primary" id="idYes">Sí, soy yo 🙋‍♀️</button>
+    <button class="btn" id="idNo">No</button>
+  </div>
+</section>
+
+<section class="screen" id="s-wrong">
+  <span class="sticker">🙈 Ops</span>
+  <h1>Então me desculpa, <em>foi engano</em>.</h1>
+  <p>Essa mensagem era pra outra pessoa. Pode fechar essa aba. Ninguém precisa saber.</p>
+  <div class="row"><button class="btn" id="idBack">Espera, na verdade sou eu</button></div>
+</section>
+
+<section class="screen" id="s-intro">
+  <div class="alert" role="alert"><span class="s">🚨</span><span>Asunto urgente</span><span class="s">🚨</span></div>
+  <div class="assist intro-assist">
+    <svg class="oni" viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M50 8C58 8 62 14 66 21L90 66C96 78 88 92 74 92H26C12 92 4 78 10 66L34 21C38 14 42 8 50 8Z" fill="#fff" stroke="#1d2b4f" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="44" cy="22" r="1.4" fill="#e8dcc0"/><circle cx="58" cy="28" r="1.4" fill="#e8dcc0"/><circle cx="27" cy="58" r="1.4" fill="#e8dcc0"/><circle cx="76" cy="60" r="1.4" fill="#e8dcc0"/>
+      <rect x="32" y="66" width="36" height="26" rx="3" fill="#1d2b4f"/>
+      <ellipse cx="35" cy="50" rx="5" ry="3" fill="#ffd9c2"/><ellipse cx="65" cy="50" rx="5" ry="3" fill="#ffd9c2"/>
+      <g class="eyes"><circle cx="41" cy="44" r="3.6" fill="#1d2b4f"/><circle cx="59" cy="44" r="3.6" fill="#1d2b4f"/>
+      <circle cx="42.2" cy="42.8" r="1.1" fill="#fff"/><circle cx="60.2" cy="42.8" r="1.1" fill="#fff"/></g>
+      <path d="M46 52Q50 56 54 52" fill="none" stroke="#1d2b4f" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M45 60L50 63L55 60L53.5 66L50 64.5L46.5 66Z" fill="#e27a97"/>
+      <path d="M48.3 64.5L51.7 64.5L53.5 80L50 84L46.5 80Z" fill="#e27a97"/>
+    </svg>
+    <div class="bubble intro">Hola, <b id="name1">Arisa</b>! Eu sou o <b>Sr. Onigiri</b> e vou guiar você nessa experiência. 🍙</div>
+  </div>
+  <h1>Temos uma pergunta rápida pra você, <span class="hl">¿vale?</span></h1>
+  <p>Leva menos de um minuto. Prometo que é mais divertido que uma reunião da Câmara.</p>
+  <div class="row"><button class="btn primary" data-go="s-ask">Dale, pergunta 👀</button></div>
+</section>
+
+<!-- 2. a pergunta -->
+<section class="screen" id="s-ask">
+  <h1 class="long">Paraguai, Espanha, agora São Paulo e finalmente <em>Natal</em>.</h1>
+  <p class="geo">As aventuras de Arisa estão aumentando em extensão geográfica. 🌎</p>
+  <p class="cv">Só tem um problema no seu extenso currículo de viagens: falta um rolê comigo em que você <span class="hl">não</span> esteja morta de cansaço. 🫠</p>
+  <p class="ask">Então, antes de você se mudar pra Natal… toparia sair de novo com <span class="tudo" id="tudo">tuuuuuuuudo</span><span class="isso">isso?</span></p>
+  <div class="row" id="btnrow">
+    <button class="btn primary" id="yes">Sí, obvio 😏</button>
+    <button class="btn" id="no">No</button>
+  </div>
+  <div class="assist">
+    <svg class="oni" viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M50 8C58 8 62 14 66 21L90 66C96 78 88 92 74 92H26C12 92 4 78 10 66L34 21C38 14 42 8 50 8Z" fill="#fff" stroke="#1d2b4f" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="44" cy="22" r="1.4" fill="#e8dcc0"/><circle cx="58" cy="28" r="1.4" fill="#e8dcc0"/><circle cx="27" cy="58" r="1.4" fill="#e8dcc0"/><circle cx="76" cy="60" r="1.4" fill="#e8dcc0"/>
+      <rect x="32" y="66" width="36" height="26" rx="3" fill="#1d2b4f"/>
+      <ellipse cx="35" cy="50" rx="5" ry="3" fill="#ffd9c2"/><ellipse cx="65" cy="50" rx="5" ry="3" fill="#ffd9c2"/>
+      <g class="eyes"><circle cx="41" cy="44" r="3.6" fill="#1d2b4f"/><circle cx="59" cy="44" r="3.6" fill="#1d2b4f"/>
+      <circle cx="42.2" cy="42.8" r="1.1" fill="#fff"/><circle cx="60.2" cy="42.8" r="1.1" fill="#fff"/></g>
+      <path d="M46 52Q50 56 54 52" fill="none" stroke="#1d2b4f" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M45 60L50 63L55 60L53.5 66L50 64.5L46.5 66Z" fill="#e27a97"/>
+      <path d="M48.3 64.5L51.7 64.5L53.5 80L50 84L46.5 80Z" fill="#e27a97"/>
+    </svg>
+    <div class="toast bubble" id="toast"></div>
+  </div>
+</section>
+
+<!-- 3. energia -->
+<section class="screen" id="s-energy">
+  <span class="sticker sky">⚡ Control de calidad</span>
+  <h1>Ótima escolha. Agora, um <em>check-in</em> rapidinho.</h1>
+  <p>No dia, qual vai ser seu nível de energia?</p>
+  <div class="big"><span id="pct">30%</span><span class="mood" id="mood">🥱</span></div>
+  <input type="range" id="energy" min="0" max="100" value="30" aria-label="Nível de energia">
+  <div class="scale"><span class="ic" id="icL"><i>😴</i>modo siesta</span><span class="ic r" id="icR">a tope<i>💃</i></span></div>
+  <div class="assist" style="margin-top:22px">
+    <svg class="oni" viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M50 8C58 8 62 14 66 21L90 66C96 78 88 92 74 92H26C12 92 4 78 10 66L34 21C38 14 42 8 50 8Z" fill="#fff" stroke="#1d2b4f" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="44" cy="22" r="1.4" fill="#e8dcc0"/><circle cx="58" cy="28" r="1.4" fill="#e8dcc0"/><circle cx="27" cy="58" r="1.4" fill="#e8dcc0"/><circle cx="76" cy="60" r="1.4" fill="#e8dcc0"/>
+      <rect x="32" y="66" width="36" height="26" rx="3" fill="#1d2b4f"/>
+      <ellipse cx="35" cy="50" rx="5" ry="3" fill="#ffd9c2"/><ellipse cx="65" cy="50" rx="5" ry="3" fill="#ffd9c2"/>
+      <g class="eyes"><circle cx="41" cy="44" r="3.6" fill="#1d2b4f"/><circle cx="59" cy="44" r="3.6" fill="#1d2b4f"/>
+      <circle cx="42.2" cy="42.8" r="1.1" fill="#fff"/><circle cx="60.2" cy="42.8" r="1.1" fill="#fff"/></g>
+      <path d="M46 52Q50 56 54 52" fill="none" stroke="#1d2b4f" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M45 60L50 63L55 60L53.5 66L50 64.5L46.5 66Z" fill="#e27a97"/>
+      <path d="M48.3 64.5L51.7 64.5L53.5 80L50 84L46.5 80Z" fill="#e27a97"/>
+    </svg>
+    <div class="toast bubble" id="energyMsg"></div>
+  </div>
+  <div class="row"><button class="btn primary" id="energyGo" disabled>Confirmar energia</button></div>
+</section>
+
+<!-- 4. plano -->
+<section class="screen" id="s-plan">
+  <span class="sticker mint">🔓 Desbloqueado</span>
+  <p class="unlock">Com <strong id="pctPlan">80%</strong> de energia, você desbloqueou <strong>3 opções de rolê</strong>.</p>
+  <h1>Qual dessas combina mais com a sua <em>vibe</em> atual?</h1>
+  <div class="chips" id="chips">
+    <button class="chip" data-v="drinks"><span class="e">🍸</span><b>Music &amp; Drinks</b>Um bar com música. Eu sei que você aguenta mais que eu</button>
+    <button class="chip" data-v="comida"><span class="e">🍝</span><b>Jantar</b>Sem pressa nenhuma</button>
+    <button class="chip wide" data-v="surpresa"><span class="e">🎁</span><b>Surprise me</b>Eu planejo, você só aparece (descansada)</button>
+  </div>
+  <div class="row"><button class="btn primary" id="planGo" disabled>Seguir</button></div>
+</section>
+
+<!-- 5. data -->
+<section class="screen" id="s-date">
+  <span class="sticker butter">🗓️ Escolhe o dia</span>
+  <h1>Quando você está <em>livre</em>?</h1>
+  <p>Escolhe <strong>3 dias</strong> em que você está livre. Os dias com ✕ são de agenda cheia. A minha, não a sua.</p>
+  <div class="cal">
+    <div class="cal-head">
+      <button class="cal-nav" id="calPrev" aria-label="Mês anterior">‹</button>
+      <b id="calTitle">Novembro 2026</b>
+      <button class="cal-nav" id="calNext" aria-label="Próximo mês">›</button>
+    </div>
+    <div class="cal-grid cal-wd"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-legend"><span><i class="lok"></i>disponível</span><span><i class="lpref"></i>pick me 👀</span><span><i class="lx">✕</i>indisponível</span></div>
+  </div>
+  <div class="row"><button class="btn primary" id="dateGo" disabled>Escolhe 3 dias (0/3)</button></div>
+</section>
+
+<!-- 6. acordo -->
+<section class="screen" id="s-deal">
+  <span class="sticker">✍️ Trato hecho</span>
+  <h1>Acordo <em>bilateral</em> assinado.</h1>
+  <div class="contract">
+    <span class="stamp">Aprobado ✓</span>
+    <h2>Letras miúdas</h2>
+    <ol>
+      <li>Datas possíveis: <strong id="dateTxt">—</strong>. Eu escolho uma e te confirmo.</li>
+      <li>Plano: <strong id="planTxt">—</strong>. A primeira rodada é minha; as outras eu sei que você vai pedir.</li>
+      <li>Você chega descansada. Eu chego pontual. (Mais ou menos.)</li>
+      <li>Eu sei que você é a engraçada. Mesmo assim vou tentar competir.</li>
+      <li>Se você comparecer, o pedido de divórcio fica suspenso.</li>
+      <li>Válido até a sua mudança pra Natal. Depois disso, renegociamos.</li>
+    </ol>
+  </div>
+  <a class="btn primary" id="send" href="#" target="_blank" rel="noopener">Mandar resposta pro <span id="from1">Alan</span> 📲</a>
+  <p class="small" id="sendHint" style="margin-top:12px">Ou tira print e manda. Sirve igual.</p>
+</section>
+
+<script>
+/* ====== CONFIG ====== */
+const CONFIG = {
+  name: "Arisa",
+  fullName: "Cheyenne Arisa Lopez",   // usado só na verificação de identidade
+  from: "Alan",
+  // WhatsApp com DDI+DDD, só números, ex: "5511999998888". Deixe "" para esconder o botão.
+  whatsapp: "5511954620087",
+  // Link do Apps Script da planilha (termina em /exec). A resposta dela é salva lá sozinha.
+  sheetUrl: "https://script.google.com/macros/s/AKfycbwlMxCA7uH96U8ZweFvhwrZjpwaMWVA-2iaK9dwLqXce91XvEDy7JK-mcsK_57VXWVM/exec",
+  // Música-tema: começa a tocar quando ela toca em "Dale, pergunta".
+  // ID do vídeo no YouTube (o que vem depois de "watch?v=").
+  songYouTube: "3sur4BmjQt8",
+  // Se o YouTube não carregar, o selo abre este link do Spotify.
+  song: "https://open.spotify.com/track/5hvMSEoAqVFso92B5swg3Y",
+  // Meses que aparecem no calendário
+  months: ["2026-11", "2026-12"],
+  // Dias da semana que nem aparecem como opção (0=dom, 1=seg, 2=ter, 3=qua...).
+  blockedWeekdays: [0, 1, 2, 3],
+  // Dias que ficam cinza, sem opção (além dos que já passaram). Formato "AAAA-MM-DD".
+  hidden: ["2026-11-14", "2026-11-15", "2026-11-19"],
+  // Dias preferidos (aparecem em roxo, "pick me").
+  preferred: ["2026-11-27", "2026-12-11", "2026-12-18"],
+  // Dias que aparecem com ✕ (indisponível).
+  unavailable: [
+    "2026-12-09", "2026-12-10",
+    "2026-12-24", "2026-12-25", "2026-12-26", "2026-12-27",
+    "2026-12-28", "2026-12-29", "2026-12-30", "2026-12-31"
+  ]
+};
+/* =================== */
+
+const $ = s => document.querySelector(s);
+/* ---- música-tema (YouTube, sem vídeo na tela) ---- */
+let yt = null, ytReady = false, playing = false, wantPlay = false;
+window.onYouTubeIframeAPIReady = function(){
+  yt = new YT.Player("yt", {
+    width: 200, height: 113, videoId: CONFIG.songYouTube,
+    playerVars: { playsinline: 1, controls: 0, rel: 0, loop: 1, playlist: CONFIG.songYouTube },
+    events: {
+      onReady: () => { ytReady = true; yt.setVolume(70); if (wantPlay) yt.playVideo(); },
+      onStateChange: e => { playing = e.data === 1; if (playing && visit.musica !== "tocou") { visit.musica = "tocou"; report("música começou"); } if (playing && usingSpotify) { usingSpotify = false; $("#player").hidden = true; } setBadge(); },
+      onError: () => { ytReady = false; yt = null; }
+    }
+  });
+};
+(function(){
+  const t = document.createElement("script"); t.src = "https://www.youtube.com/iframe_api";
+  t.onerror = () => { yt = null; };
+  document.head.appendChild(t);
+})();
+/* ---- registro da visita na planilha (uma linha por visita, atualizada a cada passo) ---- */
+const STEPS = {"s-id":"0 · Você é a Arisa?","s-wrong":"0b · Foi engano","s-intro":"1 · Asunto urgente","s-ask":"2 · Pergunta",
+  "s-energy":"3 · Energia","s-plan":"4 · Plano","s-date":"5 · Calendário","s-deal":"6 · Acordo"};
+const visit = (() => {
+  let n = 1;
+  try { n = (+localStorage.getItem("convite-visitas") || 0) + 1; localStorage.setItem("convite-visitas", n); } catch (e) {}
+  return {
+    sessao: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    visita: n, aberto: new Date().toISOString(), t0: Date.now(),
+    etapa: "", maxEtapa: "", identidade: "", tentativas_no: 0, disse_sim: "",
+    energia: "", plano: "", datas: "", whatsapp: "", musica: "", trajeto: []
+  };
+})();
+let reportTimer = null;
+function report(evento, now){
+  if (evento) visit.trajeto.push(`${new Date().toLocaleTimeString("pt-BR")} ${evento}`);
+  if (!CONFIG.sheetUrl) return;
+  clearTimeout(reportTimer);
+  const send = () => {
+    const d = Object.assign({}, visit, {
+      atualizado: new Date().toISOString(),
+      minutos: ((Date.now() - visit.t0) / 60000).toFixed(1),
+      trajeto: visit.trajeto.join("\n"),
+      aparelho: navigator.userAgent
+    });
+    try {
+      fetch(CONFIG.sheetUrl, { method: "POST", mode: "no-cors", keepalive: true,
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(d) });
+    } catch (e) {}
+  };
+  if (now) send(); else reportTimer = setTimeout(send, 1200);   // junta toques rápidos num envio só
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") { report("saiu / minimizou", true); }
+});
+function setBadge(){
+  $("#np").classList.toggle("on", playing);
+  $("#npIcon").textContent = playing ? "❚❚" : "▶";
+}
+let usingSpotify = false;
+function showSpotify(open){
+  usingSpotify = true;
+  const fr = $("#spotify"), m = (CONFIG.song || "").match(/track\/([A-Za-z0-9]+)/);
+  if (m && !fr.src) fr.src = `https://open.spotify.com/embed/track/${m[1]}?utm_source=generator`;
+  $("#player").hidden = !open;
+  $("#npIcon").textContent = open ? "✕" : "▶";
+}
+function startSong(){            // chamado dentro do toque dela
+  wantPlay = true;
+  if (yt && ytReady) yt.playVideo();
+  // Se o YouTube não começar em 3s (ex.: arquivo aberto direto, sem link), mostra o player do Spotify na página.
+  setTimeout(() => { if (!playing && wantPlay && !usingSpotify) showSpotify(true); }, 3000);
+}
+function toggleSong(){
+  if (usingSpotify || !yt) { showSpotify($("#player").hidden); return; }
+  if (playing) { wantPlay = false; yt.pauseVideo(); } else startSong();
+}
+function talk(el){
+  el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+  const o = el.parentElement.querySelector(".oni");
+  if (o) { o.classList.remove("hop"); void o.offsetWidth; o.classList.add("hop"); }
+}
+$("#name1").textContent = CONFIG.name;
+$("#from1").textContent = CONFIG.from;
+$("#np").onclick = toggleSong;
+document.querySelectorAll(".cfgFull").forEach(e => e.textContent = CONFIG.fullName);
+$("#np").classList.add("hide");
+$("#idYes").onclick = () => { visit.identidade = "Sí, soy yo"; startSong(); $("#np").classList.remove("hide"); go("s-intro"); };
+$("#idNo").onclick = () => { visit.identidade = "No (foi engano)"; go("s-wrong"); };
+$("#idBack").onclick = () => go("s-id");
+
+let typed = false;
+function typeTudo(){
+  if (typed) return; typed = true;
+  const el = $("#tudo");
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  let n = 1;
+  (function step(){
+    el.textContent = "t" + "u".repeat(n) + "do";
+    if (n < 8) { n++; setTimeout(step, 140); }
+    else { n = 1; setTimeout(step, 1400); }
+  })();
+}
+function go(id){
+  if (id === "s-ask") typeTudo();
+  if (STEPS[id] && visit.etapa !== STEPS[id]) {
+    visit.etapa = STEPS[id];
+    if (STEPS[id] > visit.maxEtapa) visit.maxEtapa = STEPS[id];
+    report("→ " + STEPS[id], id === "s-deal");
+  }
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
+  if (id !== "s-ask") resetNo();
+}
+document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => { if (b.dataset.go === "s-ask") startSong(); go(b.dataset.go); });
+
+/* ---- o "No" que foge ---- */
+const no = $("#no"), yes = $("#yes"), toast = $("#toast");
+const lines = [
+  ["¿Seguro?", "Tem certeza? Pensa com calma. 🤔"],
+  ["Repensa", "Isso não foi muito diplomático pra alguém da Câmara de Comércio."],
+  ["Divórcio?", "Cuidado: mais um não e eu protocolo o divórcio hoje mesmo. 📝"],
+  ["Hmm, no", "Sim, eu sei que você sabe que é linda. Agora aperta o outro botão. 💅"],
+  ["Ni de coña", "Esse sotaque espanhol não vai te salvar."],
+  ["Error 403", "Natal tem praia. Aqui tem eu. Empate técnico. 🏖️"],
+  ["…", "O botão desistiu de você antes de você desistir dele. 🏳️"],
+];
+let tries = 0, noTotal = 0;
+
+function dodge(e){
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  $("#s-ask").classList.add("asking");
+  tries++; noTotal++; visit.tentativas_no = noTotal; report(`tentou o No (${noTotal}ª vez)`);
+  const [label, msg] = lines[Math.min(tries-1, lines.length-1)];
+  toast.textContent = msg;
+  talk(toast);
+  if (navigator.vibrate) navigator.vibrate(30);
+  yes.style.transform = `scale(${Math.min(1 + tries*0.12, innerHeight < 620 ? 1.4 : 1.8)})`;
+
+  if (tries >= lines.length) {
+    no.textContent = "Bueno, sí 🙄";
+    no.classList.add("give");
+    no.dataset.surrender = "1";
+    return;
+  }
+  no.textContent = label;
+
+  const r = no.getBoundingClientRect();
+  if (!no.classList.contains("loose")) {
+    no.style.left = r.left + "px"; no.style.top = r.top + "px";
+    no.classList.add("loose");
+    void no.offsetWidth;
+  }
+  const W = innerWidth, H = innerHeight, pad = 16;
+  const bw = no.offsetWidth, bh = no.offsetHeight;
+  const yr = yes.getBoundingClientRect();
+  const ar = toast.parentElement.getBoundingClientRect();
+  const hit = (x,y,r,m) => x < r.right + m && x + bw > r.left - m && y < r.bottom + m && y + bh > r.top - m;
+  let x, y, n = 0;
+  do {
+    x = pad + Math.random() * (W - bw - pad*2);
+    y = pad + 60 + Math.random() * (H - bh - pad*2 - 60);
+    n++;
+  } while (n < 400 && (
+    (Math.abs(x - r.left) < 120 && Math.abs(y - r.top) < 120) ||
+    hit(x,y,ar,10) ||
+    (x < yr.left + yr.width*1.9 + 12 && x + bw > yr.left - 12 && y < yr.bottom + yr.height + 12 && y + bh > yr.top - yr.height - 12)
+  ));
+  if (n >= 400) { x = W - bw - pad; y = pad + 60; }
+  no.style.left = x + "px"; no.style.top = y + "px";
+  no.style.transform = `rotate(${(Math.random()*16-8).toFixed(1)}deg) scale(${Math.max(1 - tries*0.06, 0.7)})`;
+}
+
+function noPress(e){
+  if (no.dataset.surrender) { e.preventDefault(); sayYes(); return; }
+  dodge(e);
+}
+no.addEventListener("touchstart", noPress, {passive:false});
+no.addEventListener("pointerdown", e => { if (e.pointerType !== "touch") noPress(e); });
+no.addEventListener("click", e => { e.preventDefault(); if (no.dataset.surrender) sayYes(); });
+no.addEventListener("pointerenter", e => { if (e.pointerType === "mouse" && !no.dataset.surrender) dodge(); });
+
+function resetNo(){
+  $("#s-ask").classList.remove("asking");
+  tries = 0; no.textContent = "No"; no.className = "btn"; no.removeAttribute("data-surrender");
+  no.style.cssText = ""; yes.style.transform = ""; toast.textContent = "";
+}
+yes.onclick = sayYes;
+function sayYes(){
+  visit.disse_sim = no.dataset.surrender ? "Sí (pelo No rendido: \"Bueno, sí\")" : (tries ? `Sí, depois de ${tries} fugas do No` : "Sí, obvio (de primeira)");
+  confetti(); go("s-energy");
+}
+
+/* ---- energia ---- */
+const energy = $("#energy"), pct = $("#pct"), eMsg = $("#energyMsg"), eGo = $("#energyGo");
+function energyText(v){
+  if (v < 20) return "Isso aí é um cochilo, não um encontro. 😴";
+  if (v < 50) return "Hmm. Já vi esse filme. Duas vezes. 🎬";
+  if (v < 75) return "Aceitável. O jantar é por minha conta. 🍝";
+  if (v < 95) return "Agora sim. Será que dessa vez eu vou conhecer a versão Party Rock da Ari? 🕺";
+  return "Modo reggaeton desbloqueado. 🪩 Vou tentar te manter longe do Jack Daniel's Green Apple e dos Red Bulls.";
+}
+const moods = [[20,"😴"],[50,"🥱"],[75,"🙂"],[95,"😎"],[101,"💃"]];
+let lastMsg = "";
+energy.addEventListener("input", () => {
+  const v = +energy.value; pct.textContent = v + "%";
+  const t = energyText(v);
+  if (t !== lastMsg) {
+    eMsg.textContent = t; lastMsg = t;
+    talk(eMsg);
+    const m = $("#mood"); m.textContent = moods.find(x => v < x[0])[1];
+    m.classList.remove("bump"); void m.offsetWidth; m.classList.add("bump");
+    if (navigator.vibrate) navigator.vibrate(15);
+  }
+  $("#icL i").style.transform = `scale(${1.5 - v/100}) rotate(${-(100-v)/8}deg)`;
+  $("#icR i").style.transform = `scale(${0.6 + v/100*0.9}) rotate(${v/8}deg)`;
+  eGo.disabled = v < 50;
+});
+energy.dispatchEvent(new Event("input"));
+eGo.onclick = () => { visit.energia = energy.value + "%"; $("#pctPlan").textContent = energy.value + "%"; go("s-plan"); };
+
+/* ---- plano ---- */
+const planNames = {drinks:"music & drinks (você na liderança, eu tento acompanhar)", comida:"jantar sem pressa", surpresa:"surprise me (confia)"};
+let plan = null;
+document.querySelectorAll(".chip").forEach(c => c.onclick = () => {
+  document.querySelectorAll(".chip").forEach(x => x.classList.toggle("sel", x === c));
+  plan = c.dataset.v; $("#planGo").disabled = false; visit.plano = c.querySelector("b").textContent; report("escolheu " + visit.plano);
+});
+$("#planGo").onclick = () => go("s-date");
+
+/* ---- calendário ---- */
+const MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const WD = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+const calMonths = CONFIG.months.map(m => m.split("-").map(Number)); // [[2026,11],[2026,12]]
+let calIdx = 0, picked = [];
+const NEED = 3;
+const today = new Date(); today.setHours(0,0,0,0);
+const iso = (y,m,d) => `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+function renderCal(){
+  const [y,m] = calMonths[calIdx];
+  $("#calTitle").textContent = `${MONTHS[m-1]} ${y}`;
+  $("#calPrev").disabled = calIdx === 0; $("#calNext").disabled = calIdx === calMonths.length-1;
+  const g = $("#calGrid"); g.innerHTML = "";
+  const first = new Date(y, m-1, 1).getDay(), days = new Date(y, m, 0).getDate();
+  for (let i = 0; i < first; i++) g.appendChild(document.createElement("span"));
+  for (let d = 1; d <= days; d++){
+    const b = document.createElement("button"); b.className = "cal-day"; b.textContent = d;
+    const key = iso(y,m,d), date = new Date(y, m-1, d);
+    if (date < today) { b.classList.add("past"); b.disabled = true; }
+    else if (CONFIG.unavailable.includes(key)) { b.classList.add("off"); b.disabled = true; b.setAttribute("aria-label", d + " indisponível"); }
+    else if (CONFIG.hidden.includes(key) || CONFIG.blockedWeekdays.includes(date.getDay())) { b.classList.add("past"); b.disabled = true; }
+    else {
+      b.classList.add("ok"); if (CONFIG.preferred.includes(key)) b.classList.add("pref");
+      if (picked.includes(key)) b.classList.add("sel");
+      b.onclick = () => {
+        if (picked.includes(key)) picked = picked.filter(k => k !== key);
+        else if (picked.length < NEED) picked.push(key);
+        else { b.animate([{transform:"translateX(-3px)"},{transform:"translateX(3px)"},{transform:"none"}],{duration:200}); return; }
+        renderCal(); updateDateBtn();
+      };
+    }
+    g.appendChild(b);
+  }
+}
+$("#calPrev").onclick = () => { calIdx--; renderCal(); };
+$("#calNext").onclick = () => { calIdx++; renderCal(); };
+renderCal();
+const WDS = ["dom","seg","ter","qua","qui","sex","sáb"];
+function updateDateBtn(){
+  const dg = $("#dateGo"), n = picked.length;
+  dg.disabled = n < NEED;
+  dg.textContent = n < NEED ? `Escolhe ${NEED} dias (${n}/${NEED})` : "Fechado: 3 opções 👌";
+}
+updateDateBtn();
+function pickedLabel(){
+  return [...picked].sort().map(k => {
+    const [y,m,d] = k.split("-").map(Number);
+    return `${WDS[new Date(y,m-1,d).getDay()]} ${d}/${m}`;
+  }).join(" · ");
+}
+
+$("#dateGo").onclick = () => {
+  $("#planTxt").textContent = planNames[plan];
+  $("#dateTxt").textContent = pickedLabel();
+  const msg = `Sí. Topo sair antes de Natal. Estou livre: ${pickedLabel()}. Plano: ${planNames[plan]}. Energia: ${energy.value}%.`;
+  const send = $("#send");
+  if (CONFIG.whatsapp) {
+    send.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
+  } else {
+    send.style.display = "none";
+    $("#sendHint").innerHTML = `<strong>Agora tira um print e manda pro ${CONFIG.from}.</strong> Sirve igual. 📸`;
+  }
+  visit.datas = pickedLabel();
+  confetti(true); go("s-deal");
+};
+
+/* ---- confete alegre (sem corações) ---- */
+function confetti(withEmoji){
+  const cols = ["#ffd6e1","#d6efe2","#ffe7a3","#c9ccd4","#1b2747"];
+  const em = ["🍸","🪩","✨","🍮","💃"];
+  for (let i = 0; i < 44; i++){
+    const b = document.createElement("div");
+    if (withEmoji && i % 4 === 0) { b.className = "bit"; b.textContent = em[i % em.length]; }
+    else { b.className = "bit r"; b.style.background = cols[i % cols.length]; }
+    b.style.left = Math.random()*100 + "vw";
+    b.style.animationDuration = (1.5 + Math.random()*1.5) + "s";
+    b.style.animationDelay = (Math.random()*.3) + "s";
+    document.body.appendChild(b); setTimeout(() => b.remove(), 3500);
+  }
+}
+
+$("#send").addEventListener("click", () => { visit.whatsapp = "clicou"; report("clicou Mandar resposta (WhatsApp)", true); });
+report("abriu o convite", true);
+</script>
+</body>
+</html>
