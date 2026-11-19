@@ -165,6 +165,18 @@ input[type=range]::-moz-range-thumb{width:30px; height:30px; border-radius:50%; 
 .chip.sel{border-color:var(--ink); background:var(--ink); color:#cfcfcf}
 .chip.sel b{color:#fff}
 
+.dayplan{border:1px solid var(--hair); border-radius:18px; background:#fff; padding:8px 8px 8px 12px; margin-top:8px;
+  display:grid; grid-template-columns:72px 1fr; align-items:center; gap:6px}
+.dayplan .dl{font-weight:700; font-size:15px; color:var(--ink); margin:0; line-height:1.15}
+.dayplan .dl small{display:block; font-weight:500; font-size:11.5px; color:#6b4fa3}
+.dayplan .opts{display:grid; grid-template-columns:repeat(3,1fr); gap:5px}
+.vchip{font:inherit; font-size:11.5px; font-weight:600; padding:6px 2px; border-radius:12px; border:1px solid var(--hair);
+  background:#fff; color:var(--ink); cursor:pointer; line-height:1.2; transition:all .15s}
+.vchip .e{display:block; font-size:18px; margin-bottom:1px}
+.vchip.sel{border-color:var(--ink); background:var(--ink); color:#fff}
+.vchip:disabled{opacity:.3; cursor:not-allowed}
+.vnote{font-size:13px; color:var(--muted); margin:10px 0 0}
+
 /* acordo */
 .contract{border:1px solid var(--hair); border-radius:22px; padding:20px; margin:4px 0 18px; background:#fff;
   box-shadow:0 10px 30px rgba(0,0,0,.05); position:relative}
@@ -180,7 +192,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
 @keyframes fall{to{transform:translateY(115vh) rotate(540deg)}}
 @media (max-height:600px){
   #s-date .sticker{display:none} #s-date h1{font-size:28px} #s-date p{font-size:14px; margin-bottom:6px} #s-date .cal-day{height:29px; font-size:13px} #s-date .cal-head b{font-size:21px} #s-date .cal-nav{width:32px;height:32px} #s-date .cal-legend{margin-top:4px}
-  #s-plan .sticker{display:none} #s-plan h1{font-size:27px; margin-bottom:8px} #s-plan .unlock{font-size:15px} #s-plan .chip{padding:10px; font-size:12.5px} #s-plan .chip .e{font-size:18px; margin-bottom:2px} #s-plan .chips{margin-top:8px} #s-plan .row{margin-top:14px}
+  #s-plan .sticker{display:none} #s-plan h1{font-size:27px; margin-bottom:8px} #s-plan .unlock{font-size:15px} #s-plan .vchip .e{font-size:16px} #s-plan .dayplan{margin-top:6px} #s-plan .row{margin-top:14px}
   #s-energy .sticker{display:none} #s-energy h1{font-size:28px} #s-energy .big{font-size:44px} #s-energy .mood{font-size:34px} #s-energy .scale .ic i{font-size:24px} #s-energy .assist .oni{width:48px;height:48px} #energyMsg{font-size:14.5px}
   #s-ask h1.long{font-size:30px; margin-bottom:10px} #s-ask p.geo{font-size:17px; margin:0 0 8px}
   #s-ask p.cv{font-size:15px; margin-bottom:12px} #s-ask p.ask{font-size:16.5px}
@@ -295,24 +307,11 @@ a.btn{text-decoration:none; text-align:center; display:block}
   <div class="row"><button class="btn primary" id="energyGo" disabled>Confirmar energia</button></div>
 </section>
 
-<!-- 4. plano -->
-<section class="screen" id="s-plan">
-  <span class="sticker mint">🔓 Desbloqueado</span>
-  <p class="unlock">Com <strong id="pctPlan">80%</strong> de energia, você desbloqueou <strong>3 opções de rolê</strong>.</p>
-  <h1>Qual dessas combina mais com a sua <em>vibe</em> atual?</h1>
-  <div class="chips" id="chips">
-    <button class="chip" data-v="drinks"><span class="e">🍸</span><b>Music &amp; Drinks</b>Um bar com música. Eu sei que você aguenta mais que eu</button>
-    <button class="chip" data-v="comida"><span class="e">🍝</span><b>Jantar</b>Sem pressa nenhuma</button>
-    <button class="chip wide" data-v="surpresa"><span class="e">🎁</span><b>Surprise me</b>Evento surpresa, apenas disponível nas datas marcadas com “pick me 👀” na próxima etapa</button>
-  </div>
-  <div class="row"><button class="btn primary" id="planGo" disabled>Seguir</button></div>
-</section>
-
-<!-- 5. data -->
+<!-- 4. data -->
 <section class="screen" id="s-date">
   <span class="sticker butter">🗓️ Escolhe o dia</span>
   <h1>Quando você está <em>livre</em>?</h1>
-  <p>Escolhe <strong>de 1 a 3 dias</strong> em que você está livre.<span id="xNote"> Os dias com ✕ são de agenda cheia. A minha, não a sua.</span></p>
+  <p>Escolhe <strong>de 1 a 3 dias</strong> em que você está livre. Os dias <strong>pick me 👀</strong> liberam um rolê surpresa.<span id="xNote"> Os dias com ✕ são de agenda cheia. A minha, não a sua.</span></p>
   <div class="cal">
     <div class="cal-head">
       <button class="cal-nav" id="calPrev" aria-label="Mês anterior">‹</button>
@@ -326,6 +325,16 @@ a.btn{text-decoration:none; text-align:center; display:block}
   <div class="row"><button class="btn primary" id="dateGo" disabled>Escolhe de 1 a 3 dias</button></div>
 </section>
 
+<!-- 5. rolê por dia -->
+<section class="screen" id="s-plan">
+  <span class="sticker mint">🔓 Desbloqueado</span>
+  <p class="unlock">Com <strong id="pctPlan">80%</strong> de energia, você desbloqueou <strong>3 opções de rolê</strong>.</p>
+  <h1>Qual <em>vibe</em> pra cada dia?</h1>
+  <div id="dayPlans"></div>
+  <p class="vnote" id="vNote">🎁 Surprise me só nos dias pick me 👀</p>
+  <div class="row"><button class="btn primary" id="planGo" disabled>Fechar acordo</button></div>
+</section>
+
 <!-- 6. acordo -->
 <section class="screen" id="s-deal">
   <span class="sticker">✍️ Trato hecho</span>
@@ -335,7 +344,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
     <h2>Letras miúdas</h2>
     <ol>
       <li><span id="dateLbl">Datas possíveis</span>: <strong id="dateTxt">—</strong>. <span id="dateEnd">Eu escolho uma e te confirmo.</span></li>
-      <li>Plano: <strong id="planTxt">—</strong>. A primeira rodada é minha; as outras eu sei que você vai pedir.</li>
+      <li>A primeira rodada é minha; as outras eu sei que você vai pedir.</li>
       <li>Você chega descansada. Eu chego pontual. (Mais ou menos.)</li>
       <li>Eu sei que você é a engraçada. Mesmo assim vou tentar competir.</li>
       <li>Se você comparecer, o pedido de divórcio fica suspenso.</li>
@@ -397,7 +406,7 @@ window.onYouTubeIframeAPIReady = function(){
 })();
 /* ---- registro da visita na planilha (uma linha por visita, atualizada a cada passo) ---- */
 const STEPS = {"s-id":"0 · Você é a Arisa?","s-wrong":"0b · Foi engano","s-intro":"1 · Asunto urgente","s-ask":"2 · Pergunta",
-  "s-energy":"3 · Energia","s-plan":"4 · Plano","s-date":"5 · Calendário","s-deal":"6 · Acordo"};
+  "s-energy":"3 · Energia","s-date":"4 · Calendário","s-plan":"5 · Rolê por dia","s-deal":"6 · Acordo"};
 const visit = (() => {
   let n = 1;
   try { n = (+localStorage.getItem("convite-visitas") || 0) + 1; localStorage.setItem("convite-visitas", n); } catch (e) {}
@@ -593,16 +602,54 @@ energy.addEventListener("input", () => {
   eGo.disabled = v < 50;
 });
 energy.dispatchEvent(new Event("input"));
-eGo.onclick = () => { visit.energia = energy.value + "%"; $("#pctPlan").textContent = energy.value + "%"; go("s-plan"); };
+eGo.onclick = () => { visit.energia = energy.value + "%"; $("#pctPlan").textContent = energy.value + "%"; go("s-date"); };
 
-/* ---- plano ---- */
-const planNames = {drinks:"music & drinks (você na liderança, eu tento acompanhar)", comida:"jantar sem pressa", surpresa:"surprise me (confia)"};
-let plan = null;
-document.querySelectorAll(".chip").forEach(c => c.onclick = () => {
-  document.querySelectorAll(".chip").forEach(x => x.classList.toggle("sel", x === c));
-  plan = c.dataset.v; $("#planGo").disabled = false; visit.plano = c.querySelector("b").textContent; report("escolheu " + visit.plano);
-});
-$("#planGo").onclick = () => go("s-date");
+/* ---- rolê por dia ---- */
+const VIBES = [
+  {v:"drinks", e:"🍸", t:"Drinks", nome:"music & drinks"},
+  {v:"comida", e:"🍝", t:"Jantar", nome:"jantar sem pressa"},
+  {v:"surpresa", e:"🎁", t:"Surpresa", nome:"surprise me"}
+];
+let plans = {};   // "2026-11-27": "drinks"
+const vibeOf = k => VIBES.find(x => x.v === plans[k]);
+function dayLabel(k){ const [y,m,d] = k.split("-").map(Number); return `${WDS[new Date(y,m-1,d).getDay()]} ${d}/${m}`; }
+function renderPlans(){
+  const box = $("#dayPlans"); box.innerHTML = "";
+  const days = [...picked].sort();
+  Object.keys(plans).forEach(k => { if (!days.includes(k)) delete plans[k]; });
+  days.forEach(k => {
+    const pref = CONFIG.preferred.includes(k);
+    const row = document.createElement("div"); row.className = "dayplan";
+    row.innerHTML = `<p class="dl">${dayLabel(k)}${pref ? " <small>pick me 👀</small>" : ""}</p><div class="opts"></div>`;
+    VIBES.forEach(o => {
+      const b = document.createElement("button"); b.className = "vchip" + (plans[k] === o.v ? " sel" : "");
+      b.innerHTML = `<span class="e">${o.e}</span>${o.t}`;
+      if (o.v === "surpresa" && !pref) b.disabled = true;
+      b.onclick = () => { plans[k] = o.v; visit.plano = planSummary(); report(`${dayLabel(k)}: ${o.t}`); renderPlans(); };
+      row.querySelector(".opts").appendChild(b);
+    });
+    box.appendChild(row);
+  });
+  $("#vNote").hidden = days.every(k => CONFIG.preferred.includes(k));
+  $("#planGo").disabled = !days.every(k => plans[k]);
+}
+function planSummary(){ return [...picked].sort().filter(k => plans[k]).map(k => `${dayLabel(k)} (${vibeOf(k).nome})`).join(" · "); }
+$("#planGo").onclick = () => {
+  const n = picked.length, summary = planSummary();
+  $("#dateTxt").textContent = summary;
+  $("#dateLbl").textContent = n > 1 ? "Opções" : "Data";
+  $("#dateEnd").textContent = n > 1 ? "Eu escolho uma e te confirmo." : "Anotado na agenda.";
+  const msg = `Sí. Topo sair antes de voltar pro Paraguai. ${n > 1 ? "Opções" : "Data"}: ${summary}. Energia: ${energy.value}%.`;
+  const send = $("#send");
+  if (CONFIG.whatsapp) {
+    send.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
+  } else {
+    send.style.display = "none";
+    $("#sendHint").innerHTML = `<strong>Agora tira um print e manda pro ${CONFIG.from}.</strong> Sirve igual. 📸`;
+  }
+  visit.plano = summary;
+  confetti(true); go("s-deal");
+};
 
 /* ---- calendário ---- */
 const MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
@@ -658,20 +705,8 @@ function pickedLabel(){
 }
 
 $("#dateGo").onclick = () => {
-  $("#planTxt").textContent = planNames[plan];
-  $("#dateTxt").textContent = pickedLabel();
-  $("#dateLbl").textContent = picked.length > 1 ? "Datas possíveis" : "Data";
-  $("#dateEnd").textContent = picked.length > 1 ? "Eu escolho uma e te confirmo." : "Anotado na agenda.";
-  const msg = `Sí. Topo sair antes de voltar pro Paraguai. Estou livre: ${pickedLabel()}. Plano: ${planNames[plan]}. Energia: ${energy.value}%.`;
-  const send = $("#send");
-  if (CONFIG.whatsapp) {
-    send.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
-  } else {
-    send.style.display = "none";
-    $("#sendHint").innerHTML = `<strong>Agora tira um print e manda pro ${CONFIG.from}.</strong> Sirve igual. 📸`;
-  }
   visit.datas = pickedLabel();
-  confetti(true); go("s-deal");
+  renderPlans(); go("s-plan");
 };
 
 /* ---- confete alegre (sem corações) ---- */
