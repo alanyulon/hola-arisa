@@ -314,7 +314,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
 <section class="screen" id="s-date">
   <span class="sticker butter">🗓️ Escolhe o dia</span>
   <h1>Quando você está <em>livre</em>?</h1>
-  <p>Escolhe <strong>de 1 a 3 dias</strong> em que você está livre. Os dias <strong>pick me 👀</strong> liberam um rolê surpresa.<span id="xNote"> Os dias com ✕ são de agenda cheia. A minha, não a sua.</span></p>
+  <p>Escolhe <strong>o dia</strong> que funciona pra você. Os dias <strong>pick me 👀</strong> liberam um rolê surpresa.<span id="xNote"> Os dias com ✕ são de agenda cheia. A minha, não a sua.</span></p>
   <div class="cal">
     <div class="cal-head">
       <button class="cal-nav" id="calPrev" aria-label="Mês anterior">‹</button>
@@ -325,16 +325,16 @@ a.btn{text-decoration:none; text-align:center; display:block}
     <div class="cal-grid" id="calGrid"></div>
     <div class="cal-legend"><span><i class="lok"></i>disponível</span><span><i class="lpref"></i>pick me 👀 (tem rolê surpresa 🎁)</span><span id="xLegend"><i class="lx">✕</i>indisponível</span></div>
   </div>
-  <div class="row"><button class="btn primary" id="dateGo" disabled>Escolhe de 1 a 3 dias</button></div>
+  <div class="row"><button class="btn primary" id="dateGo" disabled>Escolhe um dia</button></div>
 </section>
 
 <!-- 5. rolê por dia -->
 <section class="screen" id="s-plan">
   <span class="sticker mint">🔓 Desbloqueado</span>
   <p class="unlock">Com <strong id="pctPlan">80%</strong> de energia, você desbloqueou <strong>3 opções de rolê</strong>.</p>
-  <h1>Qual <em>vibe</em> pra cada dia?</h1>
+  <h1>Qual a <em>vibe</em> do dia?</h1>
   <div id="dayPlans"></div>
-  <p class="vnote" id="vNote">🎁 Surprise me só nos dias pick me 👀</p>
+  <p class="vnote" id="vNote">🎁 Surpresa só nos dias pick me 👀. Quer? É só voltar e trocar o dia.</p>
   <div class="row"><button class="btn back" id="planBack">‹ Voltar</button><button class="btn primary" id="planGo" disabled>Fechar acordo</button></div>
 </section>
 
@@ -660,7 +660,7 @@ const MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","A
 const WD = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
 const calMonths = CONFIG.months.map(m => m.split("-").map(Number)); // [[2026,11],[2026,12]]
 let calIdx = 0, picked = [];
-const NEED = 3;
+const NEED = 1;
 const today = new Date(); today.setHours(0,0,0,0);
 const iso = (y,m,d) => `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
 function renderCal(){
@@ -681,8 +681,7 @@ function renderCal(){
       if (picked.includes(key)) b.classList.add("sel");
       b.onclick = () => {
         if (picked.includes(key)) picked = picked.filter(k => k !== key);
-        else if (picked.length < NEED) picked.push(key);
-        else { b.animate([{transform:"translateX(-3px)"},{transform:"translateX(3px)"},{transform:"none"}],{duration:200}); return; }
+        else picked = [key];   // uma data só: tocar em outra troca
         renderCal(); updateDateBtn();
       };
     }
@@ -698,7 +697,7 @@ const WDS = ["dom","seg","ter","qua","qui","sex","sáb"];
 function updateDateBtn(){
   const dg = $("#dateGo"), n = picked.length;
   dg.disabled = n < 1;
-  dg.textContent = n < 1 ? "Escolhe de 1 a 3 dias" : `Fechado: ${n} ${n > 1 ? "opções" : "data"} 👌`;
+  dg.textContent = n < 1 ? "Escolhe um dia" : `Fechado: ${pickedLabel()} 👌`;
 }
 updateDateBtn();
 function pickedLabel(){
