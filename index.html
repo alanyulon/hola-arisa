@@ -658,7 +658,7 @@ function energyText(v){
   if (v < 95) return "Agora sim. Será que dessa vez eu vou conhecer a versão Party Rock da Ari? 🕺";
   return "Modo reggaeton desbloqueado. 🪩 Vou tentar te manter longe do Jack Daniel's Green Apple e dos Red Bulls.";
 }
-const moods = [[20,"😴"],[60,"🥱"],[80,"🙂"],[95,"😎"],[101,"💃"]];
+const moods = [[20,"😴"],[60,"🥱"],[80,"🙂"],[90,"😎"],[100,"🤩"],[101,"💃"]];
 let lastMsg = "";
 energy.addEventListener("input", () => {
   const v = +energy.value; pct.textContent = v + "%";
@@ -666,7 +666,10 @@ energy.addEventListener("input", () => {
   if (t !== lastMsg) {
     eMsg.textContent = t; lastMsg = t;
     talk(eMsg);
-    const m = $("#mood"); m.textContent = moods.find(x => v < x[0])[1];
+  }
+  const m = $("#mood"), face = moods.find(x => v < x[0])[1];
+  if (m.textContent !== face) {
+    m.textContent = face;
     m.classList.remove("bump"); void m.offsetWidth; m.classList.add("bump");
     if (navigator.vibrate) navigator.vibrate(15);
   }
