@@ -168,7 +168,10 @@ input[type=range]::-moz-range-thumb{width:30px; height:30px; border-radius:50%; 
 .dayplan{border:1px solid var(--hair); border-radius:18px; background:#fff; padding:12px 10px 10px; margin-top:8px}
 .dayplan .dl{font-weight:700; font-size:16px; color:var(--ink); margin:0 0 10px 4px; line-height:1.15}
 .dayplan .dl small{display:inline; margin-left:6px; font-weight:500; font-size:11.5px; color:#6b4fa3}
-.dayplan .opts{display:grid; grid-template-columns:repeat(3,1fr); gap:6px}
+.dayplan .opts{display:grid; grid-template-columns:1fr 1fr; gap:6px}
+.vchip.sel::after{content:"✓"; position:absolute; top:6px; right:9px; font-size:13px; font-weight:800}
+.vchip{position:relative}
+.multi{font-size:14.5px; color:var(--muted); margin:-4px 0 4px}
 .vchip{font:inherit; font-size:14px; font-weight:700; padding:10px 6px; border-radius:12px; border:1px solid var(--hair);
   background:#fff; color:var(--ink); cursor:pointer; line-height:1.2; transition:all .15s}
 .vchip .e{display:block; font-size:22px; margin-bottom:2px}
@@ -374,8 +377,9 @@ a.btn{text-decoration:none; text-align:center; display:block}
 <!-- 5. rolê por dia -->
 <section class="screen" id="s-plan">
   <span class="sticker mint">🔓 Desbloqueado</span>
-  <p class="unlock">Com <strong id="pctPlan">80%</strong> de energia, você desbloqueou <strong id="unlockN">3 opções de rolê</strong>.</p>
+  <p class="unlock">Com <strong id="pctPlan">80%</strong> de energia, você desbloqueou <strong id="unlockN">4 opções de rolê</strong>.</p>
   <h1>Qual a <em>vibe</em> do dia?</h1>
+  <p class="multi">Pode marcar <strong>mais de uma</strong>. Drinks <em>e</em> jantar? Combinado. 😏</p>
   <div id="dayPlans"></div>
   <p class="vnote" id="vNote">🎁 O evento surpresa só rola nos dias pick me 👀. Quer? É só voltar e trocar o dia.</p>
   <div class="row"><button class="btn back" id="planBack">‹ Voltar</button><button class="btn primary" id="planGo" disabled>Fechar acordo</button></div>
@@ -410,7 +414,7 @@ const CONFIG = {
   phoneHash: "9z9yqedgsr",
   // Energia mínima pra seguir, e a partir de quanto cada rolê libera.
   minEnergy: 60,
-  unlockAt: { comida: 60, drinks: 80, surpresa: 90, reggaeton: 100 },
+  unlockAt: { comida: 60, drinks: 80, surpresa: 90, partyrock: 100 },
   from: "Alan",
   // WhatsApp com DDI+DDD, só números, ex: "5511999998888". Deixe "" para esconder o botão.
   whatsapp: "5511954620087",
@@ -675,7 +679,7 @@ energy.addEventListener("input", () => {
   }
   eGo.disabled = v < CONFIG.minEnergy;
 });
-const MARKS = [["comida","🍝","jantar"],["drinks","🍸","drinks"],["surpresa","🎁","surpresa"],["reggaeton","💃","modo reggaeton"]];
+const MARKS = [["comida","🍝","jantar"],["drinks","🍸","drinks"],["surpresa","🎁","surpresa"],["partyrock","💃","party rock"]];
 MARKS.forEach(([k,e]) => {
   const at = CONFIG.unlockAt[k], m = document.createElement("span");
   m.className = "mark"; m.dataset.k = k; m.innerHTML = `<i>${e}</i>${at}%`;
@@ -691,7 +695,7 @@ function updateMarks(){
   });
   MARKS.forEach(([k,e,t]) => (v >= CONFIG.unlockAt[k] ? got : next).push([k,e,t]));
   const nx = next.sort((a,b) => CONFIG.unlockAt[a[0]] - CONFIG.unlockAt[b[0]])[0];
-  $("#unlocks").innerHTML = !next.length ? "🔓 Tudo desbloqueado. 💃 <b>Modo reggaeton!</b>" : got.length
+  $("#unlocks").innerHTML = !next.length ? "🔓 Tudo desbloqueado, inclusive 💃 <b>Party Rock!</b>" : got.length
     ? `🔓 Desbloqueado: <b>${got.map(g => g[1] + " " + g[2]).join(" · ")}</b>` + (nx ? `<small>Próximo: ${nx[1]} ${nx[2]} em ${CONFIG.unlockAt[nx[0]]}%</small>` : " 🎉")
     : `🔒 Sobe até <b>${CONFIG.unlockAt[nx[0]]}%</b> pra desbloquear ${nx[1]} ${nx[2]}`;
 }
@@ -703,10 +707,11 @@ eGo.onclick = () => { visit.energia = energy.value + "%"; $("#pctPlan").textCont
 const VIBES = [
   {v:"drinks", e:"🍸", t:"Drinks", d:"Música & drinks", nome:"music & drinks"},
   {v:"comida", e:"🍝", t:"Jantar", d:"Mais de boa, foco na gastronomia", nome:"jantar sem pressa"},
-  {v:"surpresa", e:"🎁", t:"Surpresa", d:"É surpresa. É isso. 🤫", nome:"surprise me"}
+  {v:"surpresa", e:"🎁", t:"Surpresa", d:"É surpresa. É isso. 🤫", nome:"surprise me"},
+  {v:"partyrock", e:"💃", t:"Party Rock", d:"Reggaeton até o fim", nome:"party rock"}
 ];
-let plans = {};   // "2026-11-27": "drinks"
-const vibeOf = k => VIBES.find(x => x.v === plans[k]);
+let plans = {};   // "2026-11-27": ["drinks","comida"]
+const has = (k, v) => (plans[k] || []).includes(v);
 function dayLabel(k){ const [y,m,d] = k.split("-").map(Number); return `${WDS[new Date(y,m-1,d).getDay()]} ${d}/${m}`; }
 function renderPlans(){
   const box = $("#dayPlans"); box.innerHTML = "";
@@ -717,13 +722,17 @@ function renderPlans(){
     const row = document.createElement("div"); row.className = "dayplan";
     row.innerHTML = `<p class="dl">${dayLabel(k)}${pref ? " <small>pick me 👀</small>" : ""}</p><div class="opts"></div>`;
     VIBES.forEach(o => {
-      const b = document.createElement("button"); b.className = "vchip" + (plans[k] === o.v ? " sel" : "");
+      const b = document.createElement("button"); b.className = "vchip" + (has(k, o.v) ? " sel" : "");
       b.innerHTML = `<span class="e">${o.e}</span>${o.t}<small>${o.d}</small>`;
       const need = CONFIG.unlockAt[o.v] || 0, low = +energy.value < need;
       if (low) { b.disabled = true; b.querySelector("small").textContent = `🔒 Libera com ${need}% de energia`; }
       else if (o.v === "surpresa" && !pref) { b.disabled = true; b.querySelector("small").textContent = "🔒 Só nos dias pick me 👀"; }
-      if (b.disabled && plans[k] === o.v) delete plans[k];
-      b.onclick = () => { plans[k] = o.v; visit.plano = planSummary(); report(`${dayLabel(k)}: ${o.t}`); renderPlans(); };
+      if (b.disabled && has(k, o.v)) plans[k] = plans[k].filter(x => x !== o.v);
+      b.onclick = () => {
+        const on = has(k, o.v);
+        plans[k] = on ? plans[k].filter(x => x !== o.v) : [...(plans[k] || []), o.v];
+        visit.plano = planSummary(); report(`${dayLabel(k)}: ${on ? "tirou" : "marcou"} ${o.t}`); renderPlans();
+      };
       row.querySelector(".opts").appendChild(b);
     });
     box.appendChild(row);
@@ -735,9 +744,9 @@ function renderPlans(){
   if (lowFor.length) { $("#vNote").innerHTML = "Quer liberar mais? Volta e sobe a energia. 😏"; $("#vNote").hidden = false; }
   else if (notPref) { $("#vNote").innerHTML = "🎁 O evento surpresa só rola nos dias pick me 👀. Quer? É só voltar e trocar o dia."; $("#vNote").hidden = false; }
   else $("#vNote").hidden = true;
-  $("#planGo").disabled = !days.every(k => plans[k]);
+  $("#planGo").disabled = !days.every(k => (plans[k] || []).length);
 }
-function planSummary(){ return [...picked].sort().filter(k => plans[k]).map(k => `${dayLabel(k)} (${vibeOf(k).nome})`).join(" · "); }
+function planSummary(){ return [...picked].sort().filter(k => (plans[k] || []).length).map(k => `${dayLabel(k)} (${VIBES.filter(o => has(k, o.v)).map(o => o.nome).join(" + ")})`).join(" · "); }
 $("#planBack").onclick = () => { report("voltou pro calendário"); go("s-date"); };
 $("#dateBack").onclick = () => { report("voltou pra energia"); go("s-energy"); };
 $("#planGo").onclick = () => {
