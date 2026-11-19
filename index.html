@@ -190,6 +190,11 @@ input[type=range]::-moz-range-thumb{width:30px; height:30px; border-radius:50%; 
 .dayplan .opts{display:grid; grid-template-columns:1fr 1fr; gap:6px}
 .vchip.sel::after{content:"✓"; position:absolute; top:6px; right:9px; font-size:13px; font-weight:800}
 .vchip{position:relative}
+.dayplan.many .opts{grid-template-columns:repeat(3,1fr); gap:5px}
+.dayplan.many .vchip{font-size:13px; padding:8px 4px}
+.dayplan.many .vchip .e{font-size:19px}
+.dayplan.many .vchip small{font-size:10.5px}
+.dayplan.many .vchip.sel::after{top:4px; right:6px; font-size:11px}
 .multi{font-size:14.5px; color:var(--muted); margin:-4px 0 4px}
 .vchip{font:inherit; font-size:14px; font-weight:700; padding:10px 6px; border-radius:12px; border:1px solid var(--hair);
   background:#fff; color:var(--ink); cursor:pointer; line-height:1.2; transition:all .15s}
@@ -241,7 +246,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
 @media (max-height:700px){ #s-ask h1.long{margin-bottom:8px} #s-ask p.geo{margin:-4px 0 10px} #s-ask p.cv{margin-bottom:12px} #s-ask .row{margin-top:16px} #s-energy .assist{margin-top:12px !important} #s-energy .big{font-size:46px; margin:0 0 4px} #s-energy .mood{font-size:36px} #s-energy h1{margin-bottom:4px} #s-energy .row{margin-top:12px} }
 @media (max-height:600px){
   #s-date .sticker{display:none} #s-date h1{font-size:28px} #s-date p{font-size:14px; margin-bottom:6px} #s-date .cal-day{height:29px; font-size:13px} #s-date .cal-head b{font-size:21px} #s-date .cal-nav{width:32px;height:32px} #s-date .cal-legend{margin-top:4px}
-  #s-plan .sticker{display:none} #s-plan h1{font-size:27px; margin-bottom:8px} #s-plan .unlock{font-size:15px} #s-plan .vchip .e{font-size:16px} #s-plan .dayplan{margin-top:6px} #s-plan .row{margin-top:14px}
+  #s-plan .sticker{display:none} #s-plan h1{font-size:27px; margin-bottom:8px} #s-plan .unlock{font-size:15px} #s-plan .vchip .e{font-size:16px} #s-plan .dayplan{margin-top:6px} #s-plan .multi{font-size:13px; margin:-6px 0 2px} #s-plan .vnote{font-size:12px; margin-top:6px} #s-plan .dayplan .dl{margin-bottom:6px} #s-plan .unlock{margin-bottom:4px} #s-plan .row{margin-top:14px}
   #s-energy .sticker{display:none} #s-energy h1{font-size:26px} #s-energy .big{font-size:38px; margin:0 0 2px} #s-energy .mood{font-size:28px} .unlocks{font-size:14.5px; padding:7px 10px} .unlocks small{font-size:12.5px} #s-energy .track{padding-bottom:42px; margin-bottom:6px} #s-energy p{margin-bottom:2px} #s-energy .assist{margin-top:10px !important} #s-energy .assist .oni{width:48px;height:48px} #energyMsg{font-size:14.5px}
   #s-ask h1.long{font-size:28px; margin-bottom:8px} #s-ask p.geo{font-size:17px; margin:0 0 8px}
   #s-ask p.cv{font-size:14.5px; line-height:1.4; margin-bottom:10px} #s-ask p.ask{font-size:16px}
@@ -453,7 +458,7 @@ const CONFIG = {
   // Dias que ficam cinza, sem opção (além dos que já passaram). Formato "AAAA-MM-DD".
   hidden: ["2026-11-14", "2026-11-15", "2026-11-19"],
   // Dias liberados mesmo caindo num dia da semana bloqueado acima.
-  available: ["2026-11-25", "2026-11-29"],
+  available: ["2026-11-22", "2026-11-25", "2026-11-29"],
   // Dias preferidos (aparecem em roxo, "pick me").
   preferred: ["2026-11-27"],
   // Dias que aparecem com ✕ (indisponível).
@@ -739,6 +744,8 @@ const VIBES = [
   {v:"drinks", e:"🍸", t:"Drinks", d:"Música & drinks", nome:"music & drinks"},
   {v:"comida", e:"🍝", t:"Jantar", d:"Mais de boa, foco na gastronomia", nome:"jantar sem pressa"},
   {v:"surpresa", e:"🎁", t:"Surpresa", d:"É surpresa. É isso. 🤫", nome:"surprise me"},
+  {v:"almoco", e:"🥗", t:"Almoço", d:"De dia, sem pressa", nome:"almoço", dias:[0]},
+  {v:"cafe", e:"☕", t:"Café", d:"Um café e uma conversa boa", nome:"café", dias:[0]},
   {v:"partyrock", e:"💃", t:"Party Rock", d:"Come algo e emenda numa festa", nome:"party rock (come algo e emenda numa festa)"}
 ];
 let plans = {};   // "2026-11-27": ["drinks","comida"]
@@ -752,7 +759,10 @@ function renderPlans(){
     const pref = CONFIG.preferred.includes(k);
     const row = document.createElement("div"); row.className = "dayplan";
     row.innerHTML = `<p class="dl">${dayLabel(k)}${pref ? " <small>pick me 👀</small>" : ""}</p><div class="opts"></div>`;
-    VIBES.forEach(o => {
+    const wd = new Date(...k.split("-").map((n, i) => i === 1 ? n - 1 : +n)).getDay();
+    const opts = VIBES.filter(o => !o.dias || o.dias.includes(wd));
+    if (opts.length > 4) row.classList.add("many");
+    opts.forEach(o => {
       const b = document.createElement("button"); b.className = "vchip" + (has(k, o.v) ? " sel" : "");
       b.innerHTML = `<span class="e">${o.e}</span>${o.t}<small>${o.d}</small>`;
       const need = CONFIG.unlockAt[o.v] || 0, low = +energy.value < need;
@@ -768,9 +778,10 @@ function renderPlans(){
     });
     box.appendChild(row);
   });
-  const v = +energy.value, lowFor = VIBES.filter(o => v < (CONFIG.unlockAt[o.v] || 0));
+  const shown = VIBES.filter(o => !o.dias || days.some(k => o.dias.includes(new Date(k + "T12:00").getDay())));
+  const v = +energy.value, lowFor = shown.filter(o => v < (CONFIG.unlockAt[o.v] || 0));
   const notPref = !days.every(k => CONFIG.preferred.includes(k));
-  const n = VIBES.length - lowFor.length;
+  const n = shown.length - lowFor.length;
   $("#unlockN").textContent = n === 1 ? "1 opção de rolê" : `${n} opções de rolê`;
   if (lowFor.length) { $("#vNote").innerHTML = "Quer liberar mais? Volta e sobe a energia. 😏"; $("#vNote").hidden = false; }
   else if (notPref) { $("#vNote").innerHTML = "🎁 O evento surpresa só rola nos dias pick me 👀. Quer? É só voltar e trocar o dia."; $("#vNote").hidden = false; }
