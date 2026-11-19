@@ -109,7 +109,9 @@ p.ask{font-size:19px; font-weight:700; color:var(--ink); line-height:1.35; margi
 .btn.primary{background:var(--ink); color:#fff}
 .btn:disabled{opacity:.3}
 .row{display:flex; gap:12px; margin-top:24px; align-items:center; flex-wrap:wrap}
-#yes{transform-origin:left center; transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
+/* o Sí cresce ocupando espaço de verdade (empurra o balão), sem cobrir texto */
+#yes{--g:0; font-size:calc(17px + 7px * var(--g)); padding:calc(16px + 5px * var(--g)) calc(26px + 40px * var(--g));
+  transition:font-size .3s cubic-bezier(.3,1.6,.5,1), padding .3s cubic-bezier(.3,1.6,.5,1)}
 #no{transition:left .22s ease, top .22s ease, transform .2s ease; white-space:nowrap; z-index:5; border:1.5px solid #c9ccd4; background:#e4e6eb; color:var(--navy); box-shadow:0 6px 16px rgba(27,39,71,.18)}
 #no.loose{position:fixed; margin:0}
 #no.give{background:var(--rose); color:var(--navy); border-color:transparent}
@@ -131,10 +133,17 @@ p.ask{font-size:19px; font-weight:700; color:var(--ink); line-height:1.35; margi
 #s-ask .assist{margin-top:34px}
 /* depois do primeiro No: o texto continua, só fica mais compacto pra caber o balão */
 #s-ask h1.long, #s-ask p.geo, #s-ask p.cv, #s-ask p.ask, #s-ask .tudo{transition:font-size .3s ease, margin .3s ease}
-#s-ask.asking h1.long{font-size:23px !important; margin-bottom:4px !important}
-#s-ask.asking p.geo{font-size:15px !important; margin:0 0 6px !important}
-#s-ask.asking p.cv{font-size:13px !important; line-height:1.35 !important; margin-bottom:6px !important}
-#s-ask.asking p.ask{font-size:14.5px !important; margin-bottom:0 !important}
+#s-ask.asking h1.long{font-size:27px !important; margin-bottom:6px !important}
+#s-ask.asking p.geo{font-size:17px !important; margin:0 0 8px !important}
+#s-ask.asking p.cv{font-size:15px !important; line-height:1.4 !important; margin-bottom:8px !important}
+#s-ask.asking p.ask{font-size:16.5px !important; margin-bottom:0 !important}
+@media (max-height:600px){
+  #s-ask.asking h1.long{font-size:23px !important; margin-bottom:4px !important}
+  #s-ask.asking p.geo{font-size:15px !important; margin:0 0 6px !important}
+  #s-ask.asking p.cv{font-size:13.5px !important; line-height:1.35 !important; margin-bottom:6px !important}
+  #s-ask.asking p.ask{font-size:14.5px !important}
+  #yes{font-size:calc(17px + 4px * var(--g)); padding:calc(15px + 3px * var(--g)) calc(24px + 30px * var(--g))}
+}
 #s-ask.asking .row{margin-top:10px !important}
 #s-ask.asking .assist{margin-top:12px !important}
 #s-ask.asking .assist .oni{width:44px !important; height:44px !important}
@@ -609,7 +618,7 @@ function dodge(e){
   toast.textContent = msg;
   talk(toast);
   if (navigator.vibrate) navigator.vibrate(30);
-  yes.style.transform = `scale(${Math.min(1 + tries*0.12, innerHeight < 620 ? 1.4 : 1.8)})`;
+  yes.style.setProperty("--g", Math.min(tries / 6, 1).toFixed(2));
 
   if (tries >= lines.length) {
     no.textContent = "Bueno, sí 🙄";
@@ -667,7 +676,7 @@ no.addEventListener("pointerenter", e => { if (e.pointerType === "mouse" && !no.
 function resetNo(){
   $("#s-ask").classList.remove("asking");
   tries = 0; no.textContent = "No"; no.className = "btn"; no.removeAttribute("data-surrender");
-  no.style.cssText = ""; yes.style.transform = ""; toast.textContent = "";
+  no.style.cssText = ""; yes.style.removeProperty("--g"); toast.textContent = "";
 }
 yes.onclick = sayYes;
 function sayYes(){
