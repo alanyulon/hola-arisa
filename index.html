@@ -89,7 +89,7 @@ p strong{color:var(--ink); font-weight:700}
 .cal-day.ok.pref{background:#e6dcf7; color:#4b2f86; font-weight:700}
 .cal-day.ok.pref.sel{background:var(--ink); color:#fff}
 .cal-legend .lpref{background:#e6dcf7}
-.cal-legend{display:flex; gap:16px; flex-wrap:wrap; justify-content:center; font-size:12px; color:var(--muted); margin-top:10px}
+.cal-legend{display:flex; gap:6px 14px; flex-wrap:wrap; justify-content:center; font-size:12px; color:var(--muted); margin-top:10px}
 .cal-legend span{display:inline-flex; align-items:center; gap:6px}
 .cal-legend i{font-style:normal; display:inline-grid; place-items:center; width:20px; height:20px; border-radius:6px; font-size:12px; font-weight:700}
 .cal-legend .lx{background:#f4f5f7; color:var(--rose-ink)} .lok{background:var(--mint)}
@@ -175,6 +175,9 @@ input[type=range]::-moz-range-thumb{width:30px; height:30px; border-radius:50%; 
 .vchip .e{display:block; font-size:18px; margin-bottom:1px}
 .vchip.sel{border-color:var(--ink); background:var(--ink); color:#fff}
 .vchip:disabled{opacity:.3; cursor:not-allowed}
+.btn.back{background:#fff; color:var(--navy); border:1px solid var(--hair); font-size:15px; padding:16px 18px}
+#s-plan .row{flex-wrap:nowrap} #s-plan .row .btn{white-space:nowrap}
+@media (max-width:360px){ #s-plan .row .btn{font-size:15px; padding:14px 16px} }
 .vnote{font-size:13px; color:var(--muted); margin:10px 0 0}
 
 /* acordo */
@@ -320,7 +323,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
     </div>
     <div class="cal-grid cal-wd"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
     <div class="cal-grid" id="calGrid"></div>
-    <div class="cal-legend"><span><i class="lok"></i>disponível</span><span><i class="lpref"></i>pick me 👀</span><span id="xLegend"><i class="lx">✕</i>indisponível</span></div>
+    <div class="cal-legend"><span><i class="lok"></i>disponível</span><span><i class="lpref"></i>pick me 👀 (tem rolê surpresa 🎁)</span><span id="xLegend"><i class="lx">✕</i>indisponível</span></div>
   </div>
   <div class="row"><button class="btn primary" id="dateGo" disabled>Escolhe de 1 a 3 dias</button></div>
 </section>
@@ -332,7 +335,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
   <h1>Qual <em>vibe</em> pra cada dia?</h1>
   <div id="dayPlans"></div>
   <p class="vnote" id="vNote">🎁 Surprise me só nos dias pick me 👀</p>
-  <div class="row"><button class="btn primary" id="planGo" disabled>Fechar acordo</button></div>
+  <div class="row"><button class="btn back" id="planBack">‹ Voltar</button><button class="btn primary" id="planGo" disabled>Fechar acordo</button></div>
 </section>
 
 <!-- 6. acordo -->
@@ -634,6 +637,7 @@ function renderPlans(){
   $("#planGo").disabled = !days.every(k => plans[k]);
 }
 function planSummary(){ return [...picked].sort().filter(k => plans[k]).map(k => `${dayLabel(k)} (${vibeOf(k).nome})`).join(" · "); }
+$("#planBack").onclick = () => { report("voltou pro calendário"); go("s-date"); };
 $("#planGo").onclick = () => {
   const n = picked.length, summary = planSummary();
   $("#dateTxt").textContent = summary;
