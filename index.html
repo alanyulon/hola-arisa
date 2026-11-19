@@ -129,7 +129,16 @@ p.ask{font-size:19px; font-weight:700; color:var(--ink); line-height:1.35; margi
 .bubble.intro{font-size:15px; font-weight:500; background:var(--butter)} .bubble.intro::before{background:var(--butter)}
 .bubble.intro b{font-weight:700}
 #s-ask .assist{margin-top:34px}
-#s-ask.asking p.geo, #s-ask.asking p.cv, #s-ask.asking p.feel{display:none}
+/* depois do primeiro No: o texto continua, só fica mais compacto pra caber o balão */
+#s-ask h1.long, #s-ask p.geo, #s-ask p.cv, #s-ask p.ask, #s-ask .tudo{transition:font-size .3s ease, margin .3s ease}
+#s-ask.asking h1.long{font-size:23px !important; margin-bottom:4px !important}
+#s-ask.asking p.geo{font-size:15px !important; margin:0 0 6px !important}
+#s-ask.asking p.cv{font-size:13px !important; line-height:1.35 !important; margin-bottom:6px !important}
+#s-ask.asking p.ask{font-size:14.5px !important; margin-bottom:0 !important}
+#s-ask.asking .row{margin-top:10px !important}
+#s-ask.asking .assist{margin-top:12px !important}
+#s-ask.asking .assist .oni{width:44px !important; height:44px !important}
+#s-ask.asking .bubble{font-size:14px !important; padding:9px 12px !important}
 #s-ask p.feel{font-size:16px; line-height:1.45; color:var(--navy); margin:0 0 12px}
 #s-ask .assist .bubble{margin:0}
 #energyMsg{font-size:16px; padding:12px 14px} #s-energy .assist{margin-top:14px} #s-energy .big{font-size:56px; margin:2px 0 6px} #s-energy .mood{font-size:44px} #s-energy h1{font-size:clamp(32px,9vw,44px); margin-bottom:8px} #s-energy .row{margin-top:16px}
@@ -619,17 +628,27 @@ function dodge(e){
   const yr = yes.getBoundingClientRect();
   const ar = toast.parentElement.getBoundingClientRect();
   const hit = (x,y,r,m) => x < r.right + m && x + bw > r.left - m && y < r.bottom + m && y + bh > r.top - m;
-  let x, y, n = 0;
-  do {
-    x = pad + Math.random() * (W - bw - pad*2);
-    y = pad + 60 + Math.random() * (H - bh - pad*2 - 60);
-    n++;
-  } while (n < 400 && (
+  // o texto da tela fica sempre legível: primeiro tenta lugares que não cobrem texto
+  const texts = [...document.querySelectorAll("#s-ask h1, #s-ask p.geo, #s-ask p.cv, #s-ask p.ask")].flatMap(el => {
+    const rg = document.createRange(); rg.selectNodeContents(el); return [...rg.getClientRects()];   // linha por linha
+  });
+  const npEl = $("#np"), npR = npEl && !npEl.classList.contains("hide") ? npEl.getBoundingClientRect() : null;
+  const bad = (x, y, strict) =>
     (Math.abs(x - r.left) < 120 && Math.abs(y - r.top) < 120) ||
     hit(x,y,ar,10) ||
-    (x < yr.left + yr.width*1.9 + 12 && x + bw > yr.left - 12 && y < yr.bottom + yr.height + 12 && y + bh > yr.top - yr.height - 12)
-  ));
-  if (n >= 400) { x = W - bw - pad; y = pad + 60; }
+    (x < yr.left + yr.width*1.9 + 12 && x + bw > yr.left - 12 && y < yr.bottom + yr.height + 12 && y + bh > yr.top - yr.height - 12) ||
+    (npR && hit(x,y,npR,8)) ||
+    (strict && texts.some(t => hit(x,y,t,4)));
+  let x, y, n = 0, ok = false;
+  for (const strict of [true, false]) {
+    for (n = 0; n < 400; n++) {
+      x = pad + Math.random() * (W - bw - pad*2);
+      y = 8 + Math.random() * (H - bh - 16);
+      if (!bad(x, y, strict)) { ok = true; break; }
+    }
+    if (ok) break;
+  }
+  if (!ok) { x = W - bw - pad; y = pad + 20; }
   no.style.left = x + "px"; no.style.top = y + "px";
   no.style.transform = `rotate(${(Math.random()*16-8).toFixed(1)}deg) scale(${Math.max(1 - tries*0.06, 0.7)})`;
 }
