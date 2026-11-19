@@ -198,7 +198,8 @@ input[type=range]::-moz-range-thumb{width:30px; height:30px; border-radius:50%; 
 .dayplan.many .vchip .e{font-size:19px}
 .dayplan.many .vchip small{font-size:10.5px}
 .dayplan.many .vchip.sel::after{top:4px; right:6px; font-size:11px}
-.multi{font-size:14.5px; color:var(--muted); margin:-4px 0 4px}
+.multi{font-size:17px; color:var(--navy); margin:-4px 0 6px; line-height:1.4}
+.multi .maisde{color:#c2456b; background:#ffe3ec; padding:1px 8px; border-radius:8px; white-space:nowrap}
 .vchip{font:inherit; font-size:14px; font-weight:700; padding:10px 6px; border-radius:12px; border:1px solid var(--hair);
   background:#fff; color:var(--ink); cursor:pointer; line-height:1.2; transition:all .15s}
 .vchip .e{display:block; font-size:22px; margin-bottom:2px}
@@ -249,7 +250,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
 @media (max-height:700px){ #s-ask h1.long{margin-bottom:8px} #s-ask p.geo{margin:-4px 0 10px} #s-ask p.cv{margin-bottom:12px} #s-ask .row{margin-top:16px} #s-energy .assist{margin-top:12px !important} #s-energy .big{font-size:46px; margin:0 0 4px} #s-energy .mood{font-size:36px} #s-energy h1{margin-bottom:4px} #s-energy .row{margin-top:12px} }
 @media (max-height:600px){
   #s-date .sticker{display:none} #s-date h1{font-size:28px} #s-date p{font-size:14px; margin-bottom:6px} #s-date .cal-day{height:29px; font-size:13px} #s-date .cal-head b{font-size:21px} #s-date .cal-nav{width:32px;height:32px} #s-date .cal-legend{margin-top:4px}
-  #s-plan .sticker{display:none} #s-plan h1{font-size:27px; margin-bottom:8px} #s-plan .unlock{font-size:15px} #s-plan .vchip .e{font-size:16px} #s-plan .dayplan{margin-top:6px} #s-plan .multi{font-size:13px; margin:-6px 0 2px} #s-plan .vnote{font-size:12px; margin-top:6px} #s-plan .dayplan .dl{margin-bottom:6px} #s-plan .unlock{margin-bottom:4px} #s-plan .row{margin-top:14px}
+  #s-plan .sticker{display:none} #s-plan h1{font-size:27px; margin-bottom:8px} #s-plan .unlock{font-size:15px} #s-plan .vchip .e{font-size:16px} #s-plan .dayplan{margin-top:6px} #s-plan .multi{font-size:15px; margin:-6px 0 4px} #s-plan .vnote{font-size:12px; margin-top:6px} #s-plan .dayplan .dl{margin-bottom:6px} #s-plan .unlock{margin-bottom:4px} #s-plan .row{margin-top:14px}
   #s-energy .sticker{display:none} #s-energy h1{font-size:26px} #s-energy .big{font-size:38px; margin:0 0 2px} #s-energy .mood{font-size:28px} .unlocks{font-size:14.5px; padding:7px 10px} .unlocks small{font-size:12.5px} #s-energy .track{padding-bottom:42px; margin-bottom:6px} #s-energy p{margin-bottom:2px} #s-energy .assist{margin-top:10px !important} #s-energy .assist .oni{width:48px;height:48px} #energyMsg{font-size:14.5px}
   #s-ask h1.long{font-size:28px; margin-bottom:8px} #s-ask p.geo{font-size:17px; margin:0 0 8px}
   #s-ask p.cv{font-size:14.5px; line-height:1.4; margin-bottom:10px} #s-ask p.ask{font-size:16px}
@@ -406,7 +407,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
   <span class="sticker mint">🔓 Desbloqueado</span>
   <p class="unlock">Com <strong id="pctPlan">80%</strong> de energia, você desbloqueou <strong id="unlockN">4 opções de rolê</strong>.</p>
   <h1>Qual a <em>vibe</em> do dia?</h1>
-  <p class="multi">Pode marcar <strong>mais de uma</strong>. <span id="multiEx">Drinks <em>e</em> jantar?</span> Combinado. 😏</p>
+  <p class="multi">Pode marcar <strong class="maisde">✌️ mais de uma</strong>. <span id="multiEx">Drinks <em>e</em> jantar?</span> Combinado. 😏</p>
   <div id="dayPlans"></div>
   <p class="vnote" id="vNote">🎁 O evento surpresa só rola nos dias pick me 👀. Quer? É só voltar e trocar o dia.</p>
   <div class="row"><button class="btn back" id="planBack">‹ Voltar</button><button class="btn primary" id="planGo" disabled>Fechar acordo</button></div>
