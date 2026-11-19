@@ -312,7 +312,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
 <section class="screen" id="s-date">
   <span class="sticker butter">🗓️ Escolhe o dia</span>
   <h1>Quando você está <em>livre</em>?</h1>
-  <p>Escolhe <strong>3 dias</strong> em que você está livre.<span id="xNote"> Os dias com ✕ são de agenda cheia. A minha, não a sua.</span></p>
+  <p>Escolhe <strong>de 1 a 3 dias</strong> em que você está livre.<span id="xNote"> Os dias com ✕ são de agenda cheia. A minha, não a sua.</span></p>
   <div class="cal">
     <div class="cal-head">
       <button class="cal-nav" id="calPrev" aria-label="Mês anterior">‹</button>
@@ -323,7 +323,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
     <div class="cal-grid" id="calGrid"></div>
     <div class="cal-legend"><span><i class="lok"></i>disponível</span><span><i class="lpref"></i>pick me 👀</span><span id="xLegend"><i class="lx">✕</i>indisponível</span></div>
   </div>
-  <div class="row"><button class="btn primary" id="dateGo" disabled>Escolhe 3 dias (0/3)</button></div>
+  <div class="row"><button class="btn primary" id="dateGo" disabled>Escolhe de 1 a 3 dias</button></div>
 </section>
 
 <!-- 6. acordo -->
@@ -334,7 +334,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
     <span class="stamp">Aprobado ✓</span>
     <h2>Letras miúdas</h2>
     <ol>
-      <li>Datas possíveis: <strong id="dateTxt">—</strong>. Eu escolho uma e te confirmo.</li>
+      <li><span id="dateLbl">Datas possíveis</span>: <strong id="dateTxt">—</strong>. <span id="dateEnd">Eu escolho uma e te confirmo.</span></li>
       <li>Plano: <strong id="planTxt">—</strong>. A primeira rodada é minha; as outras eu sei que você vai pedir.</li>
       <li>Você chega descansada. Eu chego pontual. (Mais ou menos.)</li>
       <li>Eu sei que você é a engraçada. Mesmo assim vou tentar competir.</li>
@@ -646,8 +646,8 @@ renderCal();
 const WDS = ["dom","seg","ter","qua","qui","sex","sáb"];
 function updateDateBtn(){
   const dg = $("#dateGo"), n = picked.length;
-  dg.disabled = n < NEED;
-  dg.textContent = n < NEED ? `Escolhe ${NEED} dias (${n}/${NEED})` : "Fechado: 3 opções 👌";
+  dg.disabled = n < 1;
+  dg.textContent = n < 1 ? "Escolhe de 1 a 3 dias" : `Fechado: ${n} ${n > 1 ? "opções" : "data"} 👌`;
 }
 updateDateBtn();
 function pickedLabel(){
@@ -660,7 +660,9 @@ function pickedLabel(){
 $("#dateGo").onclick = () => {
   $("#planTxt").textContent = planNames[plan];
   $("#dateTxt").textContent = pickedLabel();
-  const msg = `Sí. Topo sair antes de Natal. Estou livre: ${pickedLabel()}. Plano: ${planNames[plan]}. Energia: ${energy.value}%.`;
+  $("#dateLbl").textContent = picked.length > 1 ? "Datas possíveis" : "Data";
+  $("#dateEnd").textContent = picked.length > 1 ? "Eu escolho uma e te confirmo." : "Anotado na agenda.";
+  const msg = `Sí. Topo sair antes de voltar pro Paraguai. Estou livre: ${pickedLabel()}. Plano: ${planNames[plan]}. Energia: ${energy.value}%.`;
   const send = $("#send");
   if (CONFIG.whatsapp) {
     send.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
