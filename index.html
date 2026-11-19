@@ -312,7 +312,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
 <section class="screen" id="s-date">
   <span class="sticker butter">🗓️ Escolhe o dia</span>
   <h1>Quando você está <em>livre</em>?</h1>
-  <p>Escolhe <strong>3 dias</strong> em que você está livre. Os dias com ✕ são de agenda cheia. A minha, não a sua.</p>
+  <p>Escolhe <strong>3 dias</strong> em que você está livre.<span id="xNote"> Os dias com ✕ são de agenda cheia. A minha, não a sua.</span></p>
   <div class="cal">
     <div class="cal-head">
       <button class="cal-nav" id="calPrev" aria-label="Mês anterior">‹</button>
@@ -321,7 +321,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
     </div>
     <div class="cal-grid cal-wd"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
     <div class="cal-grid" id="calGrid"></div>
-    <div class="cal-legend"><span><i class="lok"></i>disponível</span><span><i class="lpref"></i>pick me 👀</span><span><i class="lx">✕</i>indisponível</span></div>
+    <div class="cal-legend"><span><i class="lok"></i>disponível</span><span><i class="lpref"></i>pick me 👀</span><span id="xLegend"><i class="lx">✕</i>indisponível</span></div>
   </div>
   <div class="row"><button class="btn primary" id="dateGo" disabled>Escolhe 3 dias (0/3)</button></div>
 </section>
@@ -362,19 +362,17 @@ const CONFIG = {
   // Se o YouTube não carregar, o selo abre este link do Spotify.
   song: "https://open.spotify.com/track/5hvMSEoAqVFso92B5swg3Y",
   // Meses que aparecem no calendário
-  months: ["2026-11", "2026-12"],
+  months: ["2026-11"],
   // Dias da semana que nem aparecem como opção (0=dom, 1=seg, 2=ter, 3=qua...).
   blockedWeekdays: [0, 1, 2, 3],
   // Dias que ficam cinza, sem opção (além dos que já passaram). Formato "AAAA-MM-DD".
   hidden: ["2026-11-14", "2026-11-15", "2026-11-19"],
+  // Dias liberados mesmo caindo num dia da semana bloqueado acima.
+  available: ["2026-11-25", "2026-11-29"],
   // Dias preferidos (aparecem em roxo, "pick me").
-  preferred: ["2026-11-27", "2026-12-11", "2026-12-18"],
+  preferred: ["2026-11-27"],
   // Dias que aparecem com ✕ (indisponível).
-  unavailable: [
-    "2026-12-09", "2026-12-10",
-    "2026-12-24", "2026-12-25", "2026-12-26", "2026-12-27",
-    "2026-12-28", "2026-12-29", "2026-12-30", "2026-12-31"
-  ]
+  unavailable: []
 };
 /* =================== */
 
@@ -626,7 +624,7 @@ function renderCal(){
     const key = iso(y,m,d), date = new Date(y, m-1, d);
     if (date < today) { b.classList.add("past"); b.disabled = true; }
     else if (CONFIG.unavailable.includes(key)) { b.classList.add("off"); b.disabled = true; b.setAttribute("aria-label", d + " indisponível"); }
-    else if (CONFIG.hidden.includes(key) || CONFIG.blockedWeekdays.includes(date.getDay())) { b.classList.add("past"); b.disabled = true; }
+    else if (CONFIG.hidden.includes(key) || (CONFIG.blockedWeekdays.includes(date.getDay()) && !(CONFIG.available || []).includes(key))) { b.classList.add("past"); b.disabled = true; }
     else {
       b.classList.add("ok"); if (CONFIG.preferred.includes(key)) b.classList.add("pref");
       if (picked.includes(key)) b.classList.add("sel");
@@ -640,6 +638,8 @@ function renderCal(){
     g.appendChild(b);
   }
 }
+if (!CONFIG.unavailable.length) { $("#xNote").remove(); $("#xLegend").remove(); }
+if (calMonths.length < 2) { $("#calPrev").style.visibility = "hidden"; $("#calNext").style.visibility = "hidden"; }
 $("#calPrev").onclick = () => { calIdx--; renderCal(); };
 $("#calNext").onclick = () => { calIdx++; renderCal(); };
 renderCal();
