@@ -193,7 +193,9 @@ input[type=range]::-moz-range-thumb{width:30px; height:30px; border-radius:50%; 
 .unlocks b{color:var(--navy)}
 .vnote{font-size:13px; color:var(--muted); margin:10px 0 0}
 
-.phone{font:inherit; font-size:22px; font-weight:600; letter-spacing:.5px; width:100%; box-sizing:border-box; margin-top:14px;
+.phonebox{display:flex; gap:8px; margin-top:14px}
+.cc{font:inherit; font-size:16px; font-weight:600; padding:0 4px; width:92px; border-radius:18px; border:1.5px solid var(--hair); background:#fff; color:var(--ink); flex:none}
+.phone{font:inherit; font-size:20px; font-weight:600; letter-spacing:0; padding-left:14px !important; width:100%; min-width:0; box-sizing:border-box;
   padding:16px 18px; border-radius:18px; border:1.5px solid var(--hair); background:#fff; color:var(--ink); outline:none}
 .phone:focus{border-color:var(--navy)}
 .phone.bad{border-color:#e27a97; animation:shake .3s}
@@ -254,8 +256,15 @@ a.btn{text-decoration:none; text-align:center; display:block}
 <section class="screen" id="s-phone">
   <span class="sticker sound">🔐 Verificação</span>
   <h1>Perfeito. Só pra <em>confirmar</em>…</h1>
-  <p>Qual é o número do seu celular? Com ou sem o código do país.</p>
-  <input class="phone" id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="ex.: +34 612 34 56 78">
+  <p>Qual é o número do seu celular? É aquele que termina em <strong>59</strong>. 😉</p>
+  <div class="phonebox">
+    <select class="cc" id="cc" aria-label="Código do país">
+      <option value="34" selected>🇪🇸 +34</option>
+      <option value="595">🇵🇾 +595</option>
+      <option value="55">🇧🇷 +55</option>
+    </select>
+    <input class="phone" id="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="6•• •• •• 59">
+  </div>
   <p class="phone-err" id="phoneErr" hidden></p>
   <div class="row"><button class="btn primary" id="phoneGo" disabled>Confirmar ✅</button></div>
 </section>
@@ -520,7 +529,7 @@ const cyrb53 = (str, seed = 7) => { let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 
   return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36); };
 let phoneTries = 0;
 const phoneMsgs = ["Hmm, esse número não bate. Confere e tenta de novo. 🧐",
-  "Ainda não. Pode ser com ou sem o +34, só os números já servem.",
+  "Ainda não. Só o número mesmo, aquele que termina em 59.",
   "Nada ainda. Se você não for a Arisa, tudo bem, a gente finge que nada aconteceu. 👀"];
 $("#phone").addEventListener("input", e => { $("#phoneGo").disabled = e.target.value.replace(/\D/g, "").length < 9; e.target.classList.remove("bad"); });
 $("#phone").addEventListener("keydown", e => { if (e.key === "Enter" && !$("#phoneGo").disabled) $("#phoneGo").click(); });
