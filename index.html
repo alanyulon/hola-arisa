@@ -433,6 +433,8 @@ const CONFIG = {
   // Música-tema: começa a tocar quando ela toca em "Dale, pergunta".
   // ID do vídeo no YouTube (o que vem depois de "watch?v=").
   songYouTube: "3sur4BmjQt8",
+  // Segundo em que a música começa de verdade (pula intro do clipe). 0 = do começo.
+  songStart: 12,
   // Se o YouTube não carregar, o selo abre este link do Spotify.
   song: "https://open.spotify.com/track/5hvMSEoAqVFso92B5swg3Y",
   // Meses que aparecem no calendário
@@ -456,10 +458,10 @@ let yt = null, ytReady = false, playing = false, wantPlay = false;
 window.onYouTubeIframeAPIReady = function(){
   yt = new YT.Player("yt", {
     width: 200, height: 113, videoId: CONFIG.songYouTube,
-    playerVars: { playsinline: 1, controls: 0, rel: 0, loop: 1, playlist: CONFIG.songYouTube },
+    playerVars: { playsinline: 1, controls: 0, rel: 0, start: CONFIG.songStart || 0 },
     events: {
       onReady: () => { ytReady = true; yt.setVolume(70); if (wantPlay) yt.playVideo(); },
-      onStateChange: e => { playing = e.data === 1; if (playing && visit.musica !== "tocou") { visit.musica = "tocou"; report("música começou"); } if (playing && usingSpotify) { usingSpotify = false; $("#player").hidden = true; } setBadge(); },
+      onStateChange: e => { if (e.data === 0) { yt.seekTo(CONFIG.songStart || 0, true); yt.playVideo(); return; } playing = e.data === 1; if (playing && visit.musica !== "tocou") { visit.musica = "tocou"; report("música começou"); } if (playing && usingSpotify) { usingSpotify = false; $("#player").hidden = true; } setBadge(); },
       onError: () => { ytReady = false; yt = null; }
     }
   });
