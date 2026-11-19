@@ -226,7 +226,7 @@ input[type=range]::-moz-range-thumb{width:30px; height:30px; border-radius:50%; 
 .vnote{font-size:13px; color:var(--muted); margin:10px 0 0}
 
 .phonebox{display:flex; gap:8px; margin-top:14px}
-.cc{font:inherit; font-size:16px; font-weight:600; padding:0 4px; width:92px; border-radius:18px; border:1.5px solid var(--hair); background:#fff; color:var(--ink); flex:none}
+.cc{font:inherit; font-size:17px; font-weight:600; padding:0 12px; display:flex; align-items:center; border-radius:18px; border:1.5px solid var(--hair); background:#fff; color:var(--ink); flex:none}
 .phone{font:inherit; font-size:20px; font-weight:600; letter-spacing:0; padding-left:14px !important; width:100%; min-width:0; box-sizing:border-box;
   padding:16px 18px; border-radius:18px; border:1.5px solid var(--hair); background:#fff; color:var(--ink); outline:none}
 .phone:focus{border-color:var(--navy)}
@@ -291,11 +291,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
   <h1>Perfeito. Só pra <em>confirmar</em>…</h1>
   <p>Qual é o número do seu celular? É aquele que termina em <strong>59</strong>. 😉</p>
   <div class="phonebox">
-    <select class="cc" id="cc" aria-label="Código do país">
-      <option value="34" selected>🇪🇸 +34</option>
-      <option value="595">🇵🇾 +595</option>
-      <option value="55">🇧🇷 +55</option>
-    </select>
+    <span class="cc" aria-label="Código do país +34">🇪🇸 +34</span>
     <input class="phone" id="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="6•• •• •• 59">
   </div>
   <p class="phone-err" id="phoneErr" hidden></p>
