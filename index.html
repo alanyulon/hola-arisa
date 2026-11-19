@@ -165,20 +165,28 @@ input[type=range]::-moz-range-thumb{width:30px; height:30px; border-radius:50%; 
 .chip.sel{border-color:var(--ink); background:var(--ink); color:#cfcfcf}
 .chip.sel b{color:#fff}
 
-.dayplan{border:1px solid var(--hair); border-radius:18px; background:#fff; padding:8px 8px 8px 12px; margin-top:8px;
-  display:grid; grid-template-columns:72px 1fr; align-items:center; gap:6px}
-.dayplan .dl{font-weight:700; font-size:15px; color:var(--ink); margin:0; line-height:1.15}
-.dayplan .dl small{display:block; font-weight:500; font-size:11.5px; color:#6b4fa3}
-.dayplan .opts{display:grid; grid-template-columns:repeat(3,1fr); gap:5px}
-.vchip{font:inherit; font-size:11.5px; font-weight:600; padding:6px 2px; border-radius:12px; border:1px solid var(--hair);
+.dayplan{border:1px solid var(--hair); border-radius:18px; background:#fff; padding:12px 10px 10px; margin-top:8px}
+.dayplan .dl{font-weight:700; font-size:16px; color:var(--ink); margin:0 0 10px 4px; line-height:1.15}
+.dayplan .dl small{display:inline; margin-left:6px; font-weight:500; font-size:11.5px; color:#6b4fa3}
+.dayplan .opts{display:grid; grid-template-columns:repeat(3,1fr); gap:6px}
+.vchip{font:inherit; font-size:14px; font-weight:700; padding:10px 6px; border-radius:12px; border:1px solid var(--hair);
   background:#fff; color:var(--ink); cursor:pointer; line-height:1.2; transition:all .15s}
-.vchip .e{display:block; font-size:18px; margin-bottom:1px}
+.vchip .e{display:block; font-size:22px; margin-bottom:2px}
+.vchip small{display:block; font-size:11.5px; font-weight:500; color:var(--muted); margin-top:3px; line-height:1.2}
+.vchip.sel small{color:#cfd3dc}
 .vchip.sel{border-color:var(--ink); background:var(--ink); color:#fff}
 .vchip:disabled{opacity:.3; cursor:not-allowed}
 .btn.back{background:#fff; color:var(--navy); border:1px solid var(--hair); font-size:15px; padding:16px 18px}
 #s-plan .row{flex-wrap:nowrap} #s-plan .row .btn{white-space:nowrap}
 @media (max-width:360px){ #s-plan .row .btn{font-size:15px; padding:14px 16px} }
 .vnote{font-size:13px; color:var(--muted); margin:10px 0 0}
+
+.phone{font:inherit; font-size:22px; font-weight:600; letter-spacing:.5px; width:100%; box-sizing:border-box; margin-top:14px;
+  padding:16px 18px; border-radius:18px; border:1.5px solid var(--hair); background:#fff; color:var(--ink); outline:none}
+.phone:focus{border-color:var(--navy)}
+.phone.bad{border-color:#e27a97; animation:shake .3s}
+.phone-err{color:#b34d6b; font-size:15px; margin:10px 0 0}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 
 /* acordo */
 .contract{border:1px solid var(--hair); border-radius:22px; padding:20px; margin:4px 0 18px; background:#fff;
@@ -229,6 +237,15 @@ a.btn{text-decoration:none; text-align:center; display:block}
     <button class="btn primary" id="idYes">Sí, soy yo 🙋‍♀️</button>
     <button class="btn" id="idNo">No</button>
   </div>
+</section>
+
+<section class="screen" id="s-phone">
+  <span class="sticker sound">🔐 Verificação</span>
+  <h1>Perfeito. Só pra <em>confirmar</em>…</h1>
+  <p>Qual é o número do seu celular? Com ou sem o código do país.</p>
+  <input class="phone" id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="ex.: +34 612 34 56 78">
+  <p class="phone-err" id="phoneErr" hidden></p>
+  <div class="row"><button class="btn primary" id="phoneGo" disabled>Confirmar ✅</button></div>
 </section>
 
 <section class="screen" id="s-wrong">
@@ -314,7 +331,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
 <section class="screen" id="s-date">
   <span class="sticker butter">🗓️ Escolhe o dia</span>
   <h1>Quando você está <em>livre</em>?</h1>
-  <p>Escolhe <strong>o dia</strong> que funciona pra você. Os dias <strong>pick me 👀</strong> liberam um rolê surpresa.<span id="xNote"> Os dias com ✕ são de agenda cheia. A minha, não a sua.</span></p>
+  <p>Escolhe <strong>o dia</strong> que funciona pra você. Os dias <strong>pick me 👀</strong> têm um evento surpresa especial que só rola nessa data. 🎁<span id="xNote"> Os dias com ✕ são de agenda cheia. A minha, não a sua.</span></p>
   <div class="cal">
     <div class="cal-head">
       <button class="cal-nav" id="calPrev" aria-label="Mês anterior">‹</button>
@@ -323,7 +340,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
     </div>
     <div class="cal-grid cal-wd"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
     <div class="cal-grid" id="calGrid"></div>
-    <div class="cal-legend"><span><i class="lok"></i>disponível</span><span><i class="lpref"></i>pick me 👀 (tem rolê surpresa 🎁)</span><span id="xLegend"><i class="lx">✕</i>indisponível</span></div>
+    <div class="cal-legend"><span><i class="lok"></i>disponível</span><span><i class="lpref"></i>pick me 👀 (evento surpresa exclusivo 🎁)</span><span id="xLegend"><i class="lx">✕</i>indisponível</span></div>
   </div>
   <div class="row"><button class="btn primary" id="dateGo" disabled>Escolhe um dia</button></div>
 </section>
@@ -334,7 +351,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
   <p class="unlock">Com <strong id="pctPlan">80%</strong> de energia, você desbloqueou <strong>3 opções de rolê</strong>.</p>
   <h1>Qual a <em>vibe</em> do dia?</h1>
   <div id="dayPlans"></div>
-  <p class="vnote" id="vNote">🎁 Surpresa só nos dias pick me 👀. Quer? É só voltar e trocar o dia.</p>
+  <p class="vnote" id="vNote">🎁 O evento surpresa só rola nos dias pick me 👀. Quer? É só voltar e trocar o dia.</p>
   <div class="row"><button class="btn back" id="planBack">‹ Voltar</button><button class="btn primary" id="planGo" disabled>Fechar acordo</button></div>
 </section>
 
@@ -363,6 +380,8 @@ a.btn{text-decoration:none; text-align:center; display:block}
 const CONFIG = {
   name: "Arisa",
   fullName: "Cheyenne Arisa Lopez",   // usado só na verificação de identidade
+  // Celular dela, guardado embaralhado (os 9 últimos dígitos), pra não ficar visível no código.
+  phoneHash: "9z9yqedgsr",
   from: "Alan",
   // WhatsApp com DDI+DDD, só números, ex: "5511999998888". Deixe "" para esconder o botão.
   whatsapp: "5511954620087",
@@ -408,7 +427,7 @@ window.onYouTubeIframeAPIReady = function(){
   document.head.appendChild(t);
 })();
 /* ---- registro da visita na planilha (uma linha por visita, atualizada a cada passo) ---- */
-const STEPS = {"s-id":"0 · Você é a Arisa?","s-wrong":"0b · Foi engano","s-intro":"1 · Asunto urgente","s-ask":"2 · Pergunta",
+const STEPS = {"s-id":"0 · Você é a Arisa?","s-wrong":"0b · Foi engano","s-phone":"0c · Celular","s-intro":"1 · Asunto urgente","s-ask":"2 · Pergunta",
   "s-energy":"3 · Energia","s-date":"4 · Calendário","s-plan":"5 · Rolê por dia","s-deal":"6 · Acordo"};
 const visit = (() => {
   let n = 1;
@@ -474,7 +493,29 @@ $("#from1").textContent = CONFIG.from;
 $("#np").onclick = toggleSong;
 document.querySelectorAll(".cfgFull").forEach(e => e.textContent = CONFIG.fullName);
 $("#np").classList.add("hide");
-$("#idYes").onclick = () => { visit.identidade = "Sí, soy yo"; startSong(); $("#np").classList.remove("hide"); go("s-intro"); };
+$("#idYes").onclick = () => { visit.identidade = "Sí, soy yo (falta o celular)"; go("s-phone"); setTimeout(() => $("#phone").focus(), 350); };
+const cyrb53 = (str, seed = 7) => { let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36); };
+let phoneTries = 0;
+const phoneMsgs = ["Hmm, esse número não bate. Confere e tenta de novo. 🧐",
+  "Ainda não. Pode ser com ou sem o +34, só os números já servem.",
+  "Nada ainda. Se você não for a Arisa, tudo bem, a gente finge que nada aconteceu. 👀"];
+$("#phone").addEventListener("input", e => { $("#phoneGo").disabled = e.target.value.replace(/\D/g, "").length < 9; e.target.classList.remove("bad"); });
+$("#phone").addEventListener("keydown", e => { if (e.key === "Enter" && !$("#phoneGo").disabled) $("#phoneGo").click(); });
+$("#phoneGo").onclick = () => {
+  const digits = $("#phone").value.replace(/\D/g, "");
+  if (cyrb53(digits.slice(-9)) === CONFIG.phoneHash) {
+    visit.identidade = phoneTries ? `Sí, soy yo (celular certo na ${phoneTries + 1}ª)` : "Sí, soy yo (celular certo)";
+    $("#phone").blur(); startSong(); $("#np").classList.remove("hide"); go("s-intro");
+  } else {
+    phoneTries++; visit.identidade = `Sí, soy yo (errou o celular ${phoneTries}x)`; report(`errou o celular (${phoneTries}ª)`);
+    const inp = $("#phone"); inp.classList.remove("bad"); void inp.offsetWidth; inp.classList.add("bad");
+    $("#phoneErr").textContent = phoneMsgs[Math.min(phoneTries - 1, phoneMsgs.length - 1)]; $("#phoneErr").hidden = false;
+  }
+};
 $("#idNo").onclick = () => { visit.identidade = "No (foi engano)"; go("s-wrong"); };
 $("#idBack").onclick = () => go("s-id");
 
@@ -609,9 +650,9 @@ eGo.onclick = () => { visit.energia = energy.value + "%"; $("#pctPlan").textCont
 
 /* ---- rolê por dia ---- */
 const VIBES = [
-  {v:"drinks", e:"🍸", t:"Drinks", nome:"music & drinks"},
-  {v:"comida", e:"🍝", t:"Jantar", nome:"jantar sem pressa"},
-  {v:"surpresa", e:"🎁", t:"Surpresa", nome:"surprise me"}
+  {v:"drinks", e:"🍸", t:"Drinks", d:"Música & drinks", nome:"music & drinks"},
+  {v:"comida", e:"🍝", t:"Jantar", d:"Mais de boa, foco na gastronomia", nome:"jantar sem pressa"},
+  {v:"surpresa", e:"🎁", t:"Surpresa", d:"É surpresa. É isso. 🤫", nome:"surprise me"}
 ];
 let plans = {};   // "2026-11-27": "drinks"
 const vibeOf = k => VIBES.find(x => x.v === plans[k]);
@@ -626,7 +667,7 @@ function renderPlans(){
     row.innerHTML = `<p class="dl">${dayLabel(k)}${pref ? " <small>pick me 👀</small>" : ""}</p><div class="opts"></div>`;
     VIBES.forEach(o => {
       const b = document.createElement("button"); b.className = "vchip" + (plans[k] === o.v ? " sel" : "");
-      b.innerHTML = `<span class="e">${o.e}</span>${o.t}`;
+      b.innerHTML = `<span class="e">${o.e}</span>${o.t}<small>${o.d}</small>`;
       if (o.v === "surpresa" && !pref) b.disabled = true;
       b.onclick = () => { plans[k] = o.v; visit.plano = planSummary(); report(`${dayLabel(k)}: ${o.t}`); renderPlans(); };
       row.querySelector(".opts").appendChild(b);
