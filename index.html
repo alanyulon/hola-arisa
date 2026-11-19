@@ -175,10 +175,12 @@ input[type=range]::-moz-range-thumb{width:30px; height:30px; border-radius:50%; 
 .vchip small{display:block; font-size:11.5px; font-weight:500; color:var(--muted); margin-top:3px; line-height:1.2}
 .vchip.sel small{color:#cfd3dc}
 .vchip.sel{border-color:var(--ink); background:var(--ink); color:#fff}
-.vchip:disabled{opacity:.3; cursor:not-allowed}
+.vchip:disabled{opacity:.5; cursor:not-allowed; background:#f6f6f8}
 .btn.back{background:#fff; color:var(--navy); border:1px solid var(--hair); font-size:15px; padding:16px 18px}
-#s-plan .row{flex-wrap:nowrap} #s-plan .row .btn{white-space:nowrap}
-@media (max-width:360px){ #s-plan .row .btn{font-size:15px; padding:14px 16px} }
+#s-plan .row, #s-date .row{flex-wrap:nowrap} #s-plan .row .btn, #s-date .row .btn{white-space:nowrap}
+@media (max-width:360px){ #s-plan .row .btn, #s-date .row .btn{font-size:15px; padding:14px 16px} }
+.unlocks{font-size:13px; color:var(--muted); margin:10px 0 0; text-align:center}
+.unlocks b{color:var(--navy)}
 .vnote{font-size:13px; color:var(--muted); margin:10px 0 0}
 
 .phone{font:inherit; font-size:22px; font-weight:600; letter-spacing:.5px; width:100%; box-sizing:border-box; margin-top:14px;
@@ -310,6 +312,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
   <div class="big"><span id="pct">30%</span><span class="mood" id="mood">🥱</span></div>
   <input type="range" id="energy" min="0" max="100" value="30" aria-label="Nível de energia">
   <div class="scale"><span class="ic" id="icL"><i>😴</i>modo siesta</span><span class="ic r" id="icR">a tope<i>💃</i></span></div>
+  <p class="unlocks">🔓 <b>60%</b> libera 🍝 jantar · <b>80%</b> libera 🍸 drinks e 🎁 surpresa</p>
   <div class="assist" style="margin-top:22px">
     <svg class="oni" viewBox="0 0 100 100" aria-hidden="true">
       <path d="M50 8C58 8 62 14 66 21L90 66C96 78 88 92 74 92H26C12 92 4 78 10 66L34 21C38 14 42 8 50 8Z" fill="#fff" stroke="#1d2b4f" stroke-width="3" stroke-linejoin="round"/>
@@ -342,13 +345,13 @@ a.btn{text-decoration:none; text-align:center; display:block}
     <div class="cal-grid" id="calGrid"></div>
     <div class="cal-legend"><span><i class="lok"></i>disponível</span><span><i class="lpref"></i>pick me 👀 (evento surpresa exclusivo 🎁)</span><span id="xLegend"><i class="lx">✕</i>indisponível</span></div>
   </div>
-  <div class="row"><button class="btn primary" id="dateGo" disabled>Escolhe um dia</button></div>
+  <div class="row"><button class="btn back" id="dateBack">‹ Energia</button><button class="btn primary" id="dateGo" disabled>Escolhe um dia</button></div>
 </section>
 
 <!-- 5. rolê por dia -->
 <section class="screen" id="s-plan">
   <span class="sticker mint">🔓 Desbloqueado</span>
-  <p class="unlock">Com <strong id="pctPlan">80%</strong> de energia, você desbloqueou <strong>3 opções de rolê</strong>.</p>
+  <p class="unlock">Com <strong id="pctPlan">80%</strong> de energia, você desbloqueou <strong id="unlockN">3 opções de rolê</strong>.</p>
   <h1>Qual a <em>vibe</em> do dia?</h1>
   <div id="dayPlans"></div>
   <p class="vnote" id="vNote">🎁 O evento surpresa só rola nos dias pick me 👀. Quer? É só voltar e trocar o dia.</p>
@@ -382,6 +385,9 @@ const CONFIG = {
   fullName: "Cheyenne Arisa Lopez",   // usado só na verificação de identidade
   // Celular dela, guardado embaralhado (os 9 últimos dígitos), pra não ficar visível no código.
   phoneHash: "9z9yqedgsr",
+  // Energia mínima pra seguir, e a partir de quanto cada rolê libera.
+  minEnergy: 60,
+  unlockAt: { comida: 60, drinks: 80, surpresa: 80 },
   from: "Alan",
   // WhatsApp com DDI+DDD, só números, ex: "5511999998888". Deixe "" para esconder o botão.
   whatsapp: "5511954620087",
@@ -624,12 +630,12 @@ function sayYes(){
 const energy = $("#energy"), pct = $("#pct"), eMsg = $("#energyMsg"), eGo = $("#energyGo");
 function energyText(v){
   if (v < 20) return "Isso aí é um cochilo, não um encontro. 😴";
-  if (v < 50) return "Hmm. Já vi esse filme. Duas vezes. 🎬";
-  if (v < 75) return "Aceitável. O jantar é por minha conta. 🍝";
+  if (v < 60) return "Hmm. Já vi esse filme. Duas vezes. 🎬";
+  if (v < 80) return "Aceitável. O jantar é por minha conta. 🍝";
   if (v < 95) return "Agora sim. Será que dessa vez eu vou conhecer a versão Party Rock da Ari? 🕺";
   return "Modo reggaeton desbloqueado. 🪩 Vou tentar te manter longe do Jack Daniel's Green Apple e dos Red Bulls.";
 }
-const moods = [[20,"😴"],[50,"🥱"],[75,"🙂"],[95,"😎"],[101,"💃"]];
+const moods = [[20,"😴"],[60,"🥱"],[80,"🙂"],[95,"😎"],[101,"💃"]];
 let lastMsg = "";
 energy.addEventListener("input", () => {
   const v = +energy.value; pct.textContent = v + "%";
@@ -643,7 +649,7 @@ energy.addEventListener("input", () => {
   }
   $("#icL i").style.transform = `scale(${1.5 - v/100}) rotate(${-(100-v)/8}deg)`;
   $("#icR i").style.transform = `scale(${0.6 + v/100*0.9}) rotate(${v/8}deg)`;
-  eGo.disabled = v < 50;
+  eGo.disabled = v < CONFIG.minEnergy;
 });
 energy.dispatchEvent(new Event("input"));
 eGo.onclick = () => { visit.energia = energy.value + "%"; $("#pctPlan").textContent = energy.value + "%"; go("s-date"); };
@@ -668,17 +674,27 @@ function renderPlans(){
     VIBES.forEach(o => {
       const b = document.createElement("button"); b.className = "vchip" + (plans[k] === o.v ? " sel" : "");
       b.innerHTML = `<span class="e">${o.e}</span>${o.t}<small>${o.d}</small>`;
-      if (o.v === "surpresa" && !pref) b.disabled = true;
+      const need = CONFIG.unlockAt[o.v] || 0, low = +energy.value < need;
+      if (low) { b.disabled = true; b.querySelector("small").textContent = `🔒 Libera com ${need}% de energia`; }
+      else if (o.v === "surpresa" && !pref) { b.disabled = true; b.querySelector("small").textContent = "🔒 Só nos dias pick me 👀"; }
+      if (b.disabled && plans[k] === o.v) delete plans[k];
       b.onclick = () => { plans[k] = o.v; visit.plano = planSummary(); report(`${dayLabel(k)}: ${o.t}`); renderPlans(); };
       row.querySelector(".opts").appendChild(b);
     });
     box.appendChild(row);
   });
-  $("#vNote").hidden = days.every(k => CONFIG.preferred.includes(k));
+  const v = +energy.value, lowFor = VIBES.filter(o => v < (CONFIG.unlockAt[o.v] || 0));
+  const notPref = !days.every(k => CONFIG.preferred.includes(k));
+  const n = VIBES.length - lowFor.length;
+  $("#unlockN").textContent = n === 1 ? "1 opção de rolê" : `${n} opções de rolê`;
+  if (lowFor.length) { $("#vNote").innerHTML = "Quer liberar mais? Volta e sobe a energia. 😏"; $("#vNote").hidden = false; }
+  else if (notPref) { $("#vNote").innerHTML = "🎁 O evento surpresa só rola nos dias pick me 👀. Quer? É só voltar e trocar o dia."; $("#vNote").hidden = false; }
+  else $("#vNote").hidden = true;
   $("#planGo").disabled = !days.every(k => plans[k]);
 }
 function planSummary(){ return [...picked].sort().filter(k => plans[k]).map(k => `${dayLabel(k)} (${vibeOf(k).nome})`).join(" · "); }
 $("#planBack").onclick = () => { report("voltou pro calendário"); go("s-date"); };
+$("#dateBack").onclick = () => { report("voltou pra energia"); go("s-energy"); };
 $("#planGo").onclick = () => {
   const n = picked.length, summary = planSummary();
   $("#dateTxt").textContent = summary;
