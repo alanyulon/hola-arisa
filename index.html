@@ -89,6 +89,9 @@ p strong{color:var(--ink); font-weight:700}
 .cal-day.ok.pref{background:#e6dcf7; color:#4b2f86; font-weight:700}
 .cal-day.ok.pref.sel{background:var(--ink); color:#fff}
 .cal-legend .lpref{background:#e6dcf7}
+.cal-day.ok.day{background:#d9e8fb; color:#1f4f8f; font-weight:700}
+.cal-day.ok.day.sel{background:var(--ink); color:#fff}
+.cal-legend .lday{background:#d9e8fb}
 .cal-legend{display:flex; gap:6px 14px; flex-wrap:wrap; justify-content:center; font-size:12px; color:var(--muted); margin-top:10px}
 .cal-legend span{display:inline-flex; align-items:center; gap:6px}
 .cal-legend i{font-style:normal; display:inline-grid; place-items:center; width:20px; height:20px; border-radius:6px; font-size:12px; font-weight:700}
@@ -393,7 +396,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
     </div>
     <div class="cal-grid cal-wd"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
     <div class="cal-grid" id="calGrid"></div>
-    <div class="cal-legend"><span><i class="lok"></i>disponível</span><span><i class="lpref"></i>pick me 👀 (evento surpresa exclusivo 🎁)</span><span id="xLegend"><i class="lx">✕</i>indisponível</span></div>
+    <div class="cal-legend"><span><i class="lok"></i>disponível</span><span><i class="lday"></i>só rolês diurnos ☀️</span><span><i class="lpref"></i>pick me 👀 (evento surpresa exclusivo 🎁)</span><span id="xLegend"><i class="lx">✕</i>indisponível</span></div>
   </div>
   <div class="row"><button class="btn back" id="dateBack">‹ Energia</button><button class="btn primary" id="dateGo" disabled>Escolhe um dia</button></div>
 </section>
@@ -403,7 +406,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
   <span class="sticker mint">🔓 Desbloqueado</span>
   <p class="unlock">Com <strong id="pctPlan">80%</strong> de energia, você desbloqueou <strong id="unlockN">4 opções de rolê</strong>.</p>
   <h1>Qual a <em>vibe</em> do dia?</h1>
-  <p class="multi">Pode marcar <strong>mais de uma</strong>. Drinks <em>e</em> jantar? Combinado. 😏</p>
+  <p class="multi">Pode marcar <strong>mais de uma</strong>. <span id="multiEx">Drinks <em>e</em> jantar?</span> Combinado. 😏</p>
   <div id="dayPlans"></div>
   <p class="vnote" id="vNote">🎁 O evento surpresa só rola nos dias pick me 👀. Quer? É só voltar e trocar o dia.</p>
   <div class="row"><button class="btn back" id="planBack">‹ Voltar</button><button class="btn primary" id="planGo" disabled>Fechar acordo</button></div>
@@ -438,6 +441,8 @@ const CONFIG = {
   phoneHash: "9z9yqedgsr",
   // Energia mínima pra seguir, e a partir de quanto cada rolê libera.
   minEnergy: 60,
+  // Dias da semana só com rolês diurnos (almoço, café). 0 = domingo.
+  dayOnlyWeekdays: [0],
   unlockAt: { comida: 60, drinks: 80, surpresa: 90, partyrock: 100 },
   from: "Alan",
   // WhatsApp com DDI+DDD, só números, ex: "5511999998888". Deixe "" para esconder o botão.
@@ -760,7 +765,8 @@ function renderPlans(){
     const row = document.createElement("div"); row.className = "dayplan";
     row.innerHTML = `<p class="dl">${dayLabel(k)}${pref ? " <small>pick me 👀</small>" : ""}</p><div class="opts"></div>`;
     const wd = new Date(...k.split("-").map((n, i) => i === 1 ? n - 1 : +n)).getDay();
-    const opts = VIBES.filter(o => !o.dias || o.dias.includes(wd));
+    const dayOnly = (CONFIG.dayOnlyWeekdays || []).includes(wd);
+    const opts = VIBES.filter(o => dayOnly ? o.dias && o.dias.includes(wd) : !o.dias);
     if (opts.length > 4) row.classList.add("many");
     opts.forEach(o => {
       const b = document.createElement("button"); b.className = "vchip" + (has(k, o.v) ? " sel" : "");
@@ -778,12 +784,15 @@ function renderPlans(){
     });
     box.appendChild(row);
   });
-  const shown = VIBES.filter(o => !o.dias || days.some(k => o.dias.includes(new Date(k + "T12:00").getDay())));
+  const shown = VIBES.filter(o => days.some(k => { const w = new Date(k + "T12:00").getDay(), d = (CONFIG.dayOnlyWeekdays || []).includes(w); return d ? o.dias && o.dias.includes(w) : !o.dias; }));
   const v = +energy.value, lowFor = shown.filter(o => v < (CONFIG.unlockAt[o.v] || 0));
-  const notPref = !days.every(k => CONFIG.preferred.includes(k));
+  const notPref = shown.some(o => o.v === "surpresa") && !days.every(k => CONFIG.preferred.includes(k));
+  const allDay = days.every(k => (CONFIG.dayOnlyWeekdays || []).includes(new Date(k + "T12:00").getDay()));
   const n = shown.length - lowFor.length;
-  $("#unlockN").textContent = n === 1 ? "1 opção de rolê" : `${n} opções de rolê`;
-  if (lowFor.length) { $("#vNote").innerHTML = "Quer liberar mais? Volta e sobe a energia. 😏"; $("#vNote").hidden = false; }
+  $("#unlockN").textContent = (n === 1 ? "1 opção de rolê" : `${n} opções de rolê`) + (allDay ? " diurno ☀️" : "");
+  $("#multiEx").innerHTML = allDay ? "Almoço <em>e</em> café?" : "Drinks <em>e</em> jantar?";
+  if (allDay) { $("#vNote").innerHTML = "☀️ Domingo é dia de rolê diurno. Quer drinks, jantar ou festa? É só voltar e trocar o dia."; $("#vNote").hidden = false; }
+  else if (lowFor.length) { $("#vNote").innerHTML = "Quer liberar mais? Volta e sobe a energia. 😏"; $("#vNote").hidden = false; }
   else if (notPref) { $("#vNote").innerHTML = "🎁 O evento surpresa só rola nos dias pick me 👀. Quer? É só voltar e trocar o dia."; $("#vNote").hidden = false; }
   else $("#vNote").hidden = true;
   $("#planGo").disabled = !days.every(k => (plans[k] || []).length);
@@ -830,7 +839,7 @@ function renderCal(){
     else if (CONFIG.unavailable.includes(key)) { b.classList.add("off"); b.disabled = true; b.setAttribute("aria-label", d + " indisponível"); }
     else if (CONFIG.hidden.includes(key) || (CONFIG.blockedWeekdays.includes(date.getDay()) && !(CONFIG.available || []).includes(key))) { b.classList.add("past"); b.disabled = true; }
     else {
-      b.classList.add("ok"); if (CONFIG.preferred.includes(key)) b.classList.add("pref");
+      b.classList.add("ok"); if (CONFIG.preferred.includes(key)) b.classList.add("pref"); else if ((CONFIG.dayOnlyWeekdays || []).includes(date.getDay())) b.classList.add("day");
       if (picked.includes(key)) b.classList.add("sel");
       b.onclick = () => {
         if (picked.includes(key)) picked = picked.filter(k => k !== key);
