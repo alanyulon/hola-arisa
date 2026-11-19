@@ -179,7 +179,7 @@ input[type=range]::-moz-range-thumb{width:30px; height:30px; border-radius:50%; 
 .btn.back{background:#fff; color:var(--navy); border:1px solid var(--hair); font-size:15px; padding:16px 18px}
 #s-plan .row, #s-date .row{flex-wrap:nowrap} #s-plan .row .btn, #s-date .row .btn{white-space:nowrap}
 @media (max-width:360px){ #s-plan .row .btn, #s-date .row .btn{font-size:15px; padding:14px 16px} }
-.track{position:relative; padding-bottom:40px}
+.track{position:relative; padding-bottom:44px; margin-bottom:8px}
 .marks{position:absolute; left:0; right:0; top:22px; height:40px; pointer-events:none}
 .mark{position:absolute; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; font-size:10.5px; font-weight:700; color:var(--muted); transition:all .25s}
 .mark::before{content:""; width:2px; height:7px; border-radius:2px; background:#c9ccd4; margin-bottom:2px}
@@ -189,7 +189,8 @@ input[type=range]::-moz-range-thumb{width:30px; height:30px; border-radius:50%; 
 .mark.on i{filter:none; opacity:1}
 .mark.pop i{animation:markpop .45s ease}
 @keyframes markpop{40%{transform:scale(1.7) rotate(-10deg)}}
-.unlocks{font-size:13px; color:var(--muted); margin:0; text-align:center; min-height:18px}
+.unlocks{font-size:16px; line-height:1.35; color:var(--navy); margin:0; text-align:center; padding:10px 14px; border-radius:16px; background:#fff6d6; border:1px solid #f3e3a6}
+.unlocks small{display:block; font-size:13.5px; color:var(--muted); margin-top:2px}
 .unlocks b{color:var(--navy)}
 .vnote{font-size:13px; color:var(--muted); margin:10px 0 0}
 
@@ -215,10 +216,11 @@ a.btn{text-decoration:none; text-align:center; display:block}
 .bit{position:fixed; top:-30px; z-index:50; pointer-events:none; font-size:24px; animation:fall linear forwards}
 .bit.r{width:9px; height:14px; border-radius:3px}
 @keyframes fall{to{transform:translateY(115vh) rotate(540deg)}}
+@media (max-height:700px){ #s-energy .assist{margin-top:12px !important} #s-energy .big{font-size:46px; margin:0 0 4px} #s-energy .mood{font-size:36px} #s-energy h1{margin-bottom:4px} #s-energy .row{margin-top:12px} }
 @media (max-height:600px){
   #s-date .sticker{display:none} #s-date h1{font-size:28px} #s-date p{font-size:14px; margin-bottom:6px} #s-date .cal-day{height:29px; font-size:13px} #s-date .cal-head b{font-size:21px} #s-date .cal-nav{width:32px;height:32px} #s-date .cal-legend{margin-top:4px}
   #s-plan .sticker{display:none} #s-plan h1{font-size:27px; margin-bottom:8px} #s-plan .unlock{font-size:15px} #s-plan .vchip .e{font-size:16px} #s-plan .dayplan{margin-top:6px} #s-plan .row{margin-top:14px}
-  #s-energy .sticker{display:none} #s-energy h1{font-size:28px} #s-energy .big{font-size:44px} #s-energy .mood{font-size:34px} #s-energy .scale{display:none} #s-energy .track{padding-bottom:42px} #s-energy p{margin-bottom:4px} #s-energy .assist .oni{width:48px;height:48px} #energyMsg{font-size:14.5px}
+  #s-energy .sticker{display:none} #s-energy h1{font-size:26px} #s-energy .big{font-size:38px; margin:0 0 2px} #s-energy .mood{font-size:28px} .unlocks{font-size:14.5px; padding:7px 10px} .unlocks small{font-size:12.5px} #s-energy .track{padding-bottom:42px; margin-bottom:6px} #s-energy p{margin-bottom:2px} #s-energy .assist{margin-top:10px !important} #s-energy .assist .oni{width:48px;height:48px} #energyMsg{font-size:14.5px}
   #s-ask h1.long{font-size:30px; margin-bottom:10px} #s-ask p.geo{font-size:17px; margin:0 0 8px}
   #s-ask p.cv{font-size:15px; margin-bottom:12px} #s-ask p.ask{font-size:16.5px}
   #s-intro .alert{padding:10px; margin-bottom:16px} #s-intro h1{font-size:34px; margin-bottom:8px}
@@ -333,7 +335,6 @@ a.btn{text-decoration:none; text-align:center; display:block}
     <input type="range" id="energy" min="0" max="100" value="30" aria-label="Nível de energia">
     <div class="marks" id="marks"></div>
   </div>
-  <div class="scale"><span class="ic" id="icL"><i>😴</i>modo siesta</span><span class="ic r" id="icR">a tope<i>💃</i></span></div>
   <p class="unlocks" id="unlocks"></p>
   <div class="assist" style="margin-top:22px">
     <svg class="oni" viewBox="0 0 100 100" aria-hidden="true">
@@ -409,7 +410,7 @@ const CONFIG = {
   phoneHash: "9z9yqedgsr",
   // Energia mínima pra seguir, e a partir de quanto cada rolê libera.
   minEnergy: 60,
-  unlockAt: { comida: 60, drinks: 80, surpresa: 90 },
+  unlockAt: { comida: 60, drinks: 80, surpresa: 90, reggaeton: 100 },
   from: "Alan",
   // WhatsApp com DDI+DDD, só números, ex: "5511999998888". Deixe "" para esconder o botão.
   whatsapp: "5511954620087",
@@ -669,11 +670,9 @@ energy.addEventListener("input", () => {
     m.classList.remove("bump"); void m.offsetWidth; m.classList.add("bump");
     if (navigator.vibrate) navigator.vibrate(15);
   }
-  $("#icL i").style.transform = `scale(${1.5 - v/100}) rotate(${-(100-v)/8}deg)`;
-  $("#icR i").style.transform = `scale(${0.6 + v/100*0.9}) rotate(${v/8}deg)`;
   eGo.disabled = v < CONFIG.minEnergy;
 });
-const MARKS = [["comida","🍝","jantar"],["drinks","🍸","drinks"],["surpresa","🎁","surpresa"]];
+const MARKS = [["comida","🍝","jantar"],["drinks","🍸","drinks"],["surpresa","🎁","surpresa"],["reggaeton","💃","modo reggaeton"]];
 MARKS.forEach(([k,e]) => {
   const at = CONFIG.unlockAt[k], m = document.createElement("span");
   m.className = "mark"; m.dataset.k = k; m.innerHTML = `<i>${e}</i>${at}%`;
@@ -689,8 +688,8 @@ function updateMarks(){
   });
   MARKS.forEach(([k,e,t]) => (v >= CONFIG.unlockAt[k] ? got : next).push([k,e,t]));
   const nx = next.sort((a,b) => CONFIG.unlockAt[a[0]] - CONFIG.unlockAt[b[0]])[0];
-  $("#unlocks").innerHTML = got.length
-    ? `🔓 Desbloqueado: <b>${got.map(g => g[1] + " " + g[2]).join(" · ")}</b>` + (nx ? `<br>Próximo: ${nx[1]} ${nx[2]} em ${CONFIG.unlockAt[nx[0]]}%` : " 🎉")
+  $("#unlocks").innerHTML = !next.length ? "🔓 Tudo desbloqueado. 💃 <b>Modo reggaeton!</b>" : got.length
+    ? `🔓 Desbloqueado: <b>${got.map(g => g[1] + " " + g[2]).join(" · ")}</b>` + (nx ? `<small>Próximo: ${nx[1]} ${nx[2]} em ${CONFIG.unlockAt[nx[0]]}%</small>` : " 🎉")
     : `🔒 Sobe até <b>${CONFIG.unlockAt[nx[0]]}%</b> pra desbloquear ${nx[1]} ${nx[2]}`;
 }
 energy.addEventListener("input", updateMarks);
