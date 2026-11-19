@@ -151,7 +151,7 @@ input[type=range]{width:100%; -webkit-appearance:none; appearance:none; height:1
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:34px; height:34px; border-radius:50%;
   background:#fff; border:3px solid var(--ink); box-shadow:0 4px 12px rgba(0,0,0,.15)}
 input[type=range]::-moz-range-thumb{width:30px; height:30px; border-radius:50%; background:#fff; border:3px solid var(--ink)}
-.scale{display:flex; justify-content:space-between; align-items:center; margin-top:12px}
+.scale{display:flex; justify-content:space-between; align-items:center; margin-top:2px}
 
 /* planos */
 .chips{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px}
@@ -179,7 +179,17 @@ input[type=range]::-moz-range-thumb{width:30px; height:30px; border-radius:50%; 
 .btn.back{background:#fff; color:var(--navy); border:1px solid var(--hair); font-size:15px; padding:16px 18px}
 #s-plan .row, #s-date .row{flex-wrap:nowrap} #s-plan .row .btn, #s-date .row .btn{white-space:nowrap}
 @media (max-width:360px){ #s-plan .row .btn, #s-date .row .btn{font-size:15px; padding:14px 16px} }
-.unlocks{font-size:13px; color:var(--muted); margin:10px 0 0; text-align:center}
+.track{position:relative; padding-bottom:40px}
+.marks{position:absolute; left:0; right:0; top:22px; height:40px; pointer-events:none}
+.mark{position:absolute; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; font-size:10.5px; font-weight:700; color:var(--muted); transition:all .25s}
+.mark::before{content:""; width:2px; height:7px; border-radius:2px; background:#c9ccd4; margin-bottom:2px}
+.mark i{font-style:normal; font-size:18px; line-height:1; filter:grayscale(1); opacity:.45; transition:all .25s}
+@media (max-width:360px){ .mark{font-size:9px; letter-spacing:-.3px} .mark i{font-size:16px} }
+.mark.on{color:var(--navy)} .mark.on::before{background:var(--navy)}
+.mark.on i{filter:none; opacity:1}
+.mark.pop i{animation:markpop .45s ease}
+@keyframes markpop{40%{transform:scale(1.7) rotate(-10deg)}}
+.unlocks{font-size:13px; color:var(--muted); margin:0; text-align:center; min-height:18px}
 .unlocks b{color:var(--navy)}
 .vnote{font-size:13px; color:var(--muted); margin:10px 0 0}
 
@@ -206,7 +216,7 @@ a.btn{text-decoration:none; text-align:center; display:block}
 @media (max-height:600px){
   #s-date .sticker{display:none} #s-date h1{font-size:28px} #s-date p{font-size:14px; margin-bottom:6px} #s-date .cal-day{height:29px; font-size:13px} #s-date .cal-head b{font-size:21px} #s-date .cal-nav{width:32px;height:32px} #s-date .cal-legend{margin-top:4px}
   #s-plan .sticker{display:none} #s-plan h1{font-size:27px; margin-bottom:8px} #s-plan .unlock{font-size:15px} #s-plan .vchip .e{font-size:16px} #s-plan .dayplan{margin-top:6px} #s-plan .row{margin-top:14px}
-  #s-energy .sticker{display:none} #s-energy h1{font-size:28px} #s-energy .big{font-size:44px} #s-energy .mood{font-size:34px} #s-energy .scale .ic i{font-size:24px} #s-energy .assist .oni{width:48px;height:48px} #energyMsg{font-size:14.5px}
+  #s-energy .sticker{display:none} #s-energy h1{font-size:28px} #s-energy .big{font-size:44px} #s-energy .mood{font-size:34px} #s-energy .scale{display:none} #s-energy .track{padding-bottom:42px} #s-energy p{margin-bottom:4px} #s-energy .assist .oni{width:48px;height:48px} #energyMsg{font-size:14.5px}
   #s-ask h1.long{font-size:30px; margin-bottom:10px} #s-ask p.geo{font-size:17px; margin:0 0 8px}
   #s-ask p.cv{font-size:15px; margin-bottom:12px} #s-ask p.ask{font-size:16.5px}
   #s-intro .alert{padding:10px; margin-bottom:16px} #s-intro h1{font-size:34px; margin-bottom:8px}
@@ -310,9 +320,12 @@ a.btn{text-decoration:none; text-align:center; display:block}
   <h1>Ótima escolha. Agora, um <em>check-in</em> rapidinho.</h1>
   <p>No dia, qual vai ser seu nível de energia?</p>
   <div class="big"><span id="pct">30%</span><span class="mood" id="mood">🥱</span></div>
-  <input type="range" id="energy" min="0" max="100" value="30" aria-label="Nível de energia">
+  <div class="track">
+    <input type="range" id="energy" min="0" max="100" value="30" aria-label="Nível de energia">
+    <div class="marks" id="marks"></div>
+  </div>
   <div class="scale"><span class="ic" id="icL"><i>😴</i>modo siesta</span><span class="ic r" id="icR">a tope<i>💃</i></span></div>
-  <p class="unlocks">🔓 <b>60%</b> libera 🍝 jantar · <b>80%</b> libera 🍸 drinks e 🎁 surpresa</p>
+  <p class="unlocks" id="unlocks"></p>
   <div class="assist" style="margin-top:22px">
     <svg class="oni" viewBox="0 0 100 100" aria-hidden="true">
       <path d="M50 8C58 8 62 14 66 21L90 66C96 78 88 92 74 92H26C12 92 4 78 10 66L34 21C38 14 42 8 50 8Z" fill="#fff" stroke="#1d2b4f" stroke-width="3" stroke-linejoin="round"/>
@@ -387,7 +400,7 @@ const CONFIG = {
   phoneHash: "9z9yqedgsr",
   // Energia mínima pra seguir, e a partir de quanto cada rolê libera.
   minEnergy: 60,
-  unlockAt: { comida: 60, drinks: 80, surpresa: 80 },
+  unlockAt: { comida: 60, drinks: 80, surpresa: 90 },
   from: "Alan",
   // WhatsApp com DDI+DDD, só números, ex: "5511999998888". Deixe "" para esconder o botão.
   whatsapp: "5511954620087",
@@ -651,6 +664,27 @@ energy.addEventListener("input", () => {
   $("#icR i").style.transform = `scale(${0.6 + v/100*0.9}) rotate(${v/8}deg)`;
   eGo.disabled = v < CONFIG.minEnergy;
 });
+const MARKS = [["comida","🍝","jantar"],["drinks","🍸","drinks"],["surpresa","🎁","surpresa"]];
+MARKS.forEach(([k,e]) => {
+  const at = CONFIG.unlockAt[k], m = document.createElement("span");
+  m.className = "mark"; m.dataset.k = k; m.innerHTML = `<i>${e}</i>${at}%`;
+  m.style.left = `calc(17px + (100% - 34px) * ${at / 100})`;
+  $("#marks").appendChild(m);
+});
+function updateMarks(){
+  const v = +energy.value, got = [], next = [];
+  document.querySelectorAll(".mark").forEach(m => {
+    const k = m.dataset.k, on = v >= CONFIG.unlockAt[k];
+    if (on && !m.classList.contains("on")) { m.classList.remove("pop"); void m.offsetWidth; m.classList.add("pop"); }
+    m.classList.toggle("on", on);
+  });
+  MARKS.forEach(([k,e,t]) => (v >= CONFIG.unlockAt[k] ? got : next).push([k,e,t]));
+  const nx = next.sort((a,b) => CONFIG.unlockAt[a[0]] - CONFIG.unlockAt[b[0]])[0];
+  $("#unlocks").innerHTML = got.length
+    ? `🔓 Desbloqueado: <b>${got.map(g => g[1] + " " + g[2]).join(" · ")}</b>` + (nx ? `<br>Próximo: ${nx[1]} ${nx[2]} em ${CONFIG.unlockAt[nx[0]]}%` : " 🎉")
+    : `🔒 Sobe até <b>${CONFIG.unlockAt[nx[0]]}%</b> pra desbloquear ${nx[1]} ${nx[2]}`;
+}
+energy.addEventListener("input", updateMarks);
 energy.dispatchEvent(new Event("input"));
 eGo.onclick = () => { visit.energia = energy.value + "%"; $("#pctPlan").textContent = energy.value + "%"; go("s-date"); };
 
